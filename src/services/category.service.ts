@@ -54,7 +54,7 @@ export const createCategory = async (categories: typeof model.Category[]) => {
     return await model.Category.bulkCreate(
       categories,
       {
-        updateOnDuplicate: ["code"]
+        updateOnDuplicate: ["code", "label"]
       }
     )
   } catch (error) {
