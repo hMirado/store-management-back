@@ -12,7 +12,7 @@ const userSeed = require('./user.seed');
 module.exports = () => {
   return Promise.all([
     CompanySeed(),
-    CategorySeed(),
+    //CategorySeed(),
     createStockMovmentTypeSeed(),
     createSerializationTypeSeed(),
     authorizationSeed(),
@@ -20,7 +20,7 @@ module.exports = () => {
   ]).then(() => {
     [
       ShopSeed(),
-      ProductSeed(),
+      //ProductSeed(),
       authorizationRoleAdminSeed(),
       userSeed()
     ];
