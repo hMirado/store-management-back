@@ -87,14 +87,13 @@ export const getProductByCode = async (code: string) => {
 export const createProduct = async (product: typeof model.Product) => {
   try {
     return await model.Product.create(
-      product,
+      product, 
       {
-        updateOnDuplicate: ["code"]
+        updateOnDuplicate: ["code", "label"],
       }
-    );
+    )
   } catch (error) {
     throw error;
-    
   }
 }
 

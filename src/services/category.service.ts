@@ -49,6 +49,16 @@ export const getCategoryById = async (id: string) => {
   }
 }
 
+export const syncGetCategoryById = (id: string) => {
+  try {
+    return model.Category.findOne({
+      where: { category_id: id }
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
 export const createCategory = async (categories: typeof model.Category[]) => {
   try {
     return await model.Category.bulkCreate(
