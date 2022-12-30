@@ -23,8 +23,6 @@ module.exports.getCategories = async (req: IGetUserAuthInfoRequest, res: Respons
 	}
 };
 
-
-
 export const countCategories = async (req: Request, res: Response) => {
   try {
     const category = await model.Category.count();
@@ -39,7 +37,7 @@ export const countCategories = async (req: Request, res: Response) => {
 export const createCategories = async (req: IGetUserAuthInfoRequest, res: Response) => {
   try {
     const newCategories = await createCategory(req.body);
-    return res.status(200).json({status: 200, data: newCategories, notification: 'Catégories enregistrées avec succès'});
+    return res.status(201).json({status: 201, data: newCategories, notification: 'Catégories enregistrées avec succès'});
   } catch (error) {
     return res.status(500).json({ error: error, notification: "Erreur système" });
   }

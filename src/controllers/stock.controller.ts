@@ -50,10 +50,10 @@ export const qetStockHandler = async (req: Request, res: Response) => {
   const productUuid: string = req.query.product as string;
   try {
     const shop = await getShopByUuid(shopUuid);
-    if (!shop) return res.status(404).json({ status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
+    if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
     const product = await getProductByUuid(productUuid);
-    if (!product) return res.status(404).json({status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
+    if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
      
     const stock = await getStock(shopUuid, productUuid);
     return await res.status(200).json({status: 200, data: stock, notification: 'Liste des stocks récupérés.'})
