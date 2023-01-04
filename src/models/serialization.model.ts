@@ -14,14 +14,9 @@ export const Serialization = sequelize.define("serialization", {
         allowNull: false,
         unique: true
     },
-    serial_number: {
+    serialization_value: {
         type: Sequelize.STRING,
         allowNull: true,
-        unique: true
+        unique: false
     },
-    imei: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        unique: true
-    }
 });

@@ -199,20 +199,39 @@ Product.hasMany(Serialization, {
  * @summary: SERIALIZATION & SERIALIZATION-TYPE
  * @description: Relation between serialization et serialization-type
  */
-// Serialization.belongsTo(SerializationType, {
-//   foreignKey: {
-//       name: "fk_serialization_type_id",
-//       allowNull: false
-//   },
-//   targetKey: "serialization_type_id"
-// });
-// SerializationType.hasMany(Serialization, {
-//   foreignKey: {
-//       name: "fk_serialization_type_id",
-//       allowNull: false
-//   },
-//   sourceKey: "serialization_type_id"
-// });
+Serialization.belongsTo(SerializationType, {
+  foreignKey: {
+      name: "fk_serialization_type_id",
+      allowNull: false
+  },
+  targetKey: "serialization_type_id"
+});
+SerializationType.hasMany(Serialization, {
+  foreignKey: {
+      name: "fk_serialization_type_id",
+      allowNull: false
+  },
+  sourceKey: "serialization_type_id"
+});
+
+/**
+ * @summary: SERIALIZATION & STOCK
+ * @description: Relation between serialization and stock
+ */
+Serialization.belongsTo(Attribute, {
+  foreignKey: {
+    name: "fk_attribute_id",
+      allowNull: false
+  },
+  targetKey: "attribute_id"
+});
+Attribute.hasOne(Serialization, {
+  foreignKey: {
+    name: "fk_attribute_id",
+    allowNull: false
+  },
+  sourceKey: "attribute_id"
+})
 
 
 /**
