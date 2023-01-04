@@ -12,6 +12,7 @@ const attributeRouter = require("./routes/attribute.route");
 const stockRouter = require("./routes/stock.route");
 const userRouer = require("./routes/user.route");
 const authRoute = require("./routes/authentication.route");
+const typeRoute = require("./routes/serialization-type.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -50,6 +51,7 @@ app.use("/attribute", attributeRouter);
 app.use("/stock", stockRouter);
 app.use("/user", userRouer);
 app.use("/authentication", authRoute);
+app.use("/type", typeRoute);
 
 
 const port = process.env.PORT || 3000;

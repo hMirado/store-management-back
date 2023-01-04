@@ -1,8 +1,9 @@
 const model = require("../models/index");
+import { Op } from "sequelize"
 
-export const createMultipleSerialization =async (value: typeof model.Serialization[]) => {
+export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: IDBTransaction | any = null) => {
   try {
-    return await model.Serialization.bulkCreate(value);
+    return await model.Serialization.bulkCreate(value, { transaction: _transaction });
   } catch (error) {
     throw error
   }
@@ -16,30 +17,15 @@ export const createSerialization =async (value: typeof model.Serialization) => {
   }
 };
 
-export const getSerializationTypeByCode = async (code: string) => {
+export const getSerializationByValue = async (value: string, type: number) => {
   try {
-    return await model.SerializationType.findOne({
-      where: { code: code }
-    });
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const getSerializationBySerialNumber = async (value: string) => {
-  try {
-    return await model.Serialization.findOne({
-      where: { serial_number: value }
-    });
-  } catch (error) {
-    throw error;
-  }
-}
-
-export const getSerializationByImei = async (value: string) => {
-  try {
-    return await model.Serialization.findOne({
-      where: { imei: value }
+    return await model.Serialization.findAll({
+      where: {
+        [Op.and]:[ 
+          { serialization_value: `%${value}` },
+          { fk_serialization_type_id: type }
+        ]
+      }
     });
   } catch (error) {
     throw error;
