@@ -13,6 +13,7 @@ const stockRouter = require("./routes/stock.route");
 const userRouer = require("./routes/user.route");
 const authRoute = require("./routes/authentication.route");
 const typeRoute = require("./routes/serialization-type.route");
+const attributeTypeRoute = require("./routes/attribute-type.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -30,7 +31,7 @@ app.use(
 );
 app.use(cors());
 
-sequelize.sync();
+sequelize.sync({ alter: true });
 
 /*sequelize
   .sync({ force: true })
@@ -52,6 +53,7 @@ app.use("/stock", stockRouter);
 app.use("/user", userRouer);
 app.use("/authentication", authRoute);
 app.use("/type", typeRoute);
+app.use("/attribute-type", attributeTypeRoute);
 
 
 const port = process.env.PORT || 3000;

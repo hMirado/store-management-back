@@ -13,45 +13,14 @@ const Attribute = sequelize.define("attribute", {
     defaultValue: Sequelize.UUIDV4,
     allowNull: false
   },
-  camera: {
+  attribute: {
     type: Sequelize.STRING,
-    allowNull: true,
-    defaultValue: ''
+    allowNull: false,
   },
-  graphics_card: {
+  attribute_serialization: {
     type: Sequelize.STRING,
-    allowNull: true,
-    defaultValue: ''
-  },
-  processor: {
-    type: Sequelize.STRING,
-    allowNull: true,
-    defaultValue: ''
-  },
-  ram: {
-    type: Sequelize.INTEGER,
-    allowNull: true,
-    defaultValue: 0
-  },
-  storage: {
-    type: Sequelize.INTEGER,
-    allowNull: true,
-    defaultValue: 0
-  },
-  storage_type: {
-    type: Sequelize.STRING,
-    allowNull: true,
-    defaultValue: ''
+    allowNull: false,
   }
-  
-  // fk_product_id: {
-  //   type: Sequelize.INTEGER,
-  //   allowNull: false,
-  //   references: {
-  //     model: "products",
-  //     key: "product_id"
-  //   }
-  // }
 });
 
 module.exports = Attribute;

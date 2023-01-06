@@ -12,6 +12,7 @@ import { User } from './user.model';
 import { Role } from './role.model';
 import { Authorization } from './authorization.model';
 import { AuthorizationRole } from './authorization-role.model';
+import { AttributeType } from './attribute-type.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -92,6 +93,28 @@ Attribute.belongsTo(Product, {
     allowNull: false
   },
   targetKey: "product_id",
+});
+
+
+/**
+ * @summary: ATTRIBUTE & ATTRIBUTE TYPE
+ * @description: Relation between Attribute and Attribute Type
+ */
+AttributeType.hasMany(Attribute, 
+  {
+    foreignKey: {
+      name: "fk_attribute_type_id",
+      allowNull: false
+    },
+    sourceKey: "attribute_type_id"
+  }
+);
+Attribute.belongsTo(AttributeType, {
+  foreignKey: {
+    name: "fk_attribute_type_id",
+    allowNull: false
+  },
+  targetKey: "attribute_type_id",
 });
 
 
@@ -214,24 +237,25 @@ SerializationType.hasMany(Serialization, {
   sourceKey: "serialization_type_id"
 });
 
+
 /**
- * @summary: SERIALIZATION & STOCK
- * @description: Relation between serialization and stock
+ * @summary: SERIALIZATION & SHOP
+ * @description: Relation between serialization et shop
  */
-Serialization.belongsTo(Attribute, {
+Serialization.belongsTo(Shop, {
   foreignKey: {
-    name: "fk_attribute_id",
+      name: "fk_shop_id",
       allowNull: false
   },
-  targetKey: "attribute_id"
+  targetKey: "shop_id"
 });
-Attribute.hasOne(Serialization, {
+Shop.hasMany(Serialization, {
   foreignKey: {
-    name: "fk_attribute_id",
-    allowNull: false
+      name: "fk_shop_id",
+      allowNull: false
   },
-  sourceKey: "attribute_id"
-})
+  sourceKey: "shop_id"
+});
 
 
 /**
@@ -304,7 +328,8 @@ module.exports = {
   Shop, 
   Category, 
   Product, 
-  Attribute, 
+  Attribute,
+  AttributeType,
   Stock, 
   StockMovment, 
   StockMovmentType, 

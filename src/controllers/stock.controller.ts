@@ -11,7 +11,7 @@ import { getShopByUuid } from '../services/shop.service'
 import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.service'
 import { getProductByUuid, getProductById } from "../services/product.service";
 import { createMultipleSerialization } from '../services/serialization.service';
-import { createAttribute } from '../services/attribute.service';
+import { createMultipleAttribute } from '../services/attribute.service';
 const model = require("../models/index");
 
 module.exports.addStock = async (req: Request, res: Response) => {
@@ -77,13 +77,15 @@ const sequelize = require("../config/db.config");
 export const createOrUpdateStockHandler = async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   var newStock: any = {};
-  const attributes = req.body.attributes;
+  const details = req.body.details;
+  const random: number = Date.now();
   try {
     const shop = await getShopByUuid(req.params.shop);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
     const product = await getProductById(req.body.fk_product_id);
     if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
+    const uniqueId: string = `${req.body.fk_product_id}-${random}`;
 
     const stockMovmentType = await getStockMovmentTypeByMovment('IN');
     const stock = await getStockById(shop.shop_id, product.product_id);
@@ -111,26 +113,28 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
     newStock.movment = movment;
 
     const newAttributes: any[] = [];
-    for (const attribute of attributes) {
-      const data: typeof model.Attribute = {
-        camera: attribute.camera,
-        graphics_card: attribute.graphics_card,
-        processor: attribute.processor,
-        ram: attribute.ram,
-        storage: attribute.storage,
-        storage_type: attribute.storage_type,
-        fk_product_id: product.product_id
-      }
-      const attributeCreated = await createAttribute(data, transaction);
-      const serialization = attribute.serialization.map((x: any)=> {
+    for (const detail of details) {
+      const attributes = detail.attributes.map((value: any) => {
         return {
-          serialization_value: x.value,
-          fk_serialization_type_id: x.type,
           fk_product_id: product.product_id,
-          fk_attribute_id: attributeCreated.attribute_id
+          attribute: value.attribute,
+          attribute_serialization:uniqueId,
+          fk_attribute_type_id: value.attribute_type
         }
       });
-      const serializationCreated = await createMultipleSerialization(serialization, transaction);
+
+      const attributeCreated = await createMultipleAttribute(attributes, transaction);
+
+      const serializations = detail.serializations.map((value: any)=> {
+        return {
+          serialization_value: value.value,
+          attribute_serialization:uniqueId,
+          fk_serialization_type_id: value.type,
+          fk_product_id: product.product_id,
+          fk_shop_id: shop.shop_id
+        }
+      });
+      const serializationCreated = await createMultipleSerialization(serializations, transaction);
       newAttributes.push({attribute: attributeCreated, serialization: serializationCreated});
     }
     newStock.detail = newAttributes;

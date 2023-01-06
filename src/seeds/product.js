@@ -17,6 +17,14 @@ module.exports = function() {
       ttc_price: 4000000,
       is_serializable: true,
       fk_category_id: 3
+    },
+    {
+      code: 'PHONE',
+      label: 'IPhone 14',
+      ht_price: 3200000,
+      ttc_price: 4000000,
+      is_serializable: true,
+      fk_category_id: 5
     }
   ]).then(_ => console.log('Seed product complete'));
 };

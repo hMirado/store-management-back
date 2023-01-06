@@ -3,7 +3,7 @@ const Category = require("../models/category.model");
 module.exports = function () {
 	return Category.bulkCreate([
 		{
-      code: 'ACCESS',
+      code: 'ACCES',
 			label: "Accessoire",
 		},
 		{
@@ -15,7 +15,7 @@ module.exports = function () {
 			label: "Jeux vidéo",
 		},
 		{
-      code: 'OPC',
+      code: 'PC',
 			label: "Ordinateur & PC",
 		},
 		{
@@ -23,7 +23,7 @@ module.exports = function () {
 			label: "Smartphone",
 		},
 		{
-      code: 'TBT',
+      code: 'TAB',
 			label: "Tablette",
 		},
 	]).then(_ => console.log('Seed category complete'));

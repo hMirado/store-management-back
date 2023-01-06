@@ -19,4 +19,8 @@ export const Serialization = sequelize.define("serialization", {
         allowNull: true,
         unique: false
     },
+    attribute_serialization: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    }
 });
