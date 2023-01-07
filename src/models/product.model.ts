@@ -12,12 +12,12 @@ const Product = sequelize.define("product", {
     type: Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
     allowNull: false,
-    unique: true
+    unique: 'compositeIndex'
   },
   code: {
     type: Sequelize.STRING,
     allowNull: false,
-    unique: true
+    unique: 'compositeIndex'
   },
   label: {
     type: Sequelize.STRING,

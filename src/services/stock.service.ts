@@ -4,6 +4,7 @@ const model = require("../models/index");
 import { Request } from "express";
 import { toLowerKeys } from "../helpers/format";
 import { Buffer } from "buffer";
+import { getPagination, getPagingData } from "../helpers/pagination";
 
 export const getStockByIdAndShop = async (product: number, shop: number) => {
   try {
@@ -187,29 +188,57 @@ export const addStockMovment = async (value: typeof model.StockMovment, transact
   }
 };
 
-export const getProductsInStock = async (shop: string) => {
+export const getProductsInStock = async (req: Request, shop: string) => {
   try {
-    const stocks =  await model.Stock.findAll(
-      { 
-        include: 
-        [
-          {
-            model: model.Shop,
-            where: {
-              shop_uuid: shop
+    if (req.query.paginate && req.query.paginate == '1')
+    {
+      const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
+      const size = req.query.size ? req.query.size : 10;
+      const { limit, offset } = getPagination(page, +size)
+      const stocks =  await model.Stock.findAndCountAll(
+        { 
+          include: 
+          [
+            {
+              model: model.Shop,
+              where: {
+                shop_uuid: shop
+              }
+            },
+            {
+              model: model.Product
             }
-          },
-          {
-            model: model.Product
-          }
-        ]
-      }
-    );
-    const productInStock: typeof model.Product = [];
-    stocks.forEach((stock: typeof model.Stock) => {
-      productInStock.push(stock.product);
-    })
-    return stocks;
+          ],
+          offset,
+          limit,
+          order: [
+            ['updatedAt', 'DESC']
+          ],
+        }
+      );
+      return getPagingData(stocks, +page, 10);
+    } else {
+      const stocks =  await model.Stock.findAll(
+        { 
+          include: 
+          [
+            {
+              model: model.Shop,
+              where: {
+                shop_uuid: shop
+              }
+            },
+            {
+              model: model.Product
+            }
+          ],
+          order: [
+            ['updatedAt', 'DESC']
+          ],
+        }
+      );
+      return stocks;
+    }
   } catch (error: any) {
     throw error;
   }

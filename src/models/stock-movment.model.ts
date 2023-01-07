@@ -12,7 +12,7 @@ export const StockMovment = sequelize.define("stock_movment", {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
-        unique: true
+        unique: 'compositeIndex'
     },
     quantity: {
         type: Sequelize.INTEGER,

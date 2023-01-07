@@ -3,7 +3,7 @@ import { createOrUpdateStockHandler, getProductsInStockHandler, qetStockHandler 
 import { verifyToken } from "../middlewares/auth";
 
 stockRouter.post('/:shop', verifyToken, createOrUpdateStockHandler);
-stockRouter.get('/', verifyToken, getProductsInStockHandler);
+stockRouter.get('/:shop', verifyToken, getProductsInStockHandler);
 stockRouter.get('/product', verifyToken, qetStockHandler);
 
 module.exports = stockRouter;

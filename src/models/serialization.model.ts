@@ -12,7 +12,7 @@ export const Serialization = sequelize.define("serialization", {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
-        unique: true
+        unique: 'compositeIndex'
     },
     serialization_value: {
         type: Sequelize.STRING,

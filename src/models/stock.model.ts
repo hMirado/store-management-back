@@ -12,7 +12,7 @@ const Stock = sequelize.define("stock", {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
-        unique: true
+        unique: 'compositeIndex'
     },
     quantity: {
         type: Sequelize.INTEGER,

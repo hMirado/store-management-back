@@ -42,12 +42,12 @@ module.exports.addStock = async (req: Request, res: Response) => {
 // }
 
 export const getProductsInStockHandler = async (req: Request, res: Response) => {
-  const shopUuid: string = req.query.shop as string
+  const shopUuid: string = req.params.shop
   try {
     const shop = await getShopByUuid(shopUuid);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
     
-    const stock = await getProductsInStock(shopUuid);
+    const stock = await getProductsInStock(req, shopUuid);
     return await res.status(200).json({status: 200, data: stock, notification: 'Liste des stocks récupérés.'})
   } catch (error: any) {
     console.error(error)
@@ -78,14 +78,15 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
   const transaction = await sequelize.transaction();
   var newStock: any = {};
   const details = req.body.details;
+  const productId = req.body.item
   const random: number = Date.now();
   try {
     const shop = await getShopByUuid(req.params.shop);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
-    const product = await getProductById(req.body.fk_product_id);
+    const product = await getProductById(productId);
     if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
-    const uniqueId: string = `${req.body.fk_product_id}-${random}`;
+    const uniqueId: string = `${productId}-${random}`;
 
     const stockMovmentType = await getStockMovmentTypeByMovment('IN');
     const stock = await getStockById(shop.shop_id, product.product_id);
@@ -139,7 +140,7 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
     }
     newStock.detail = newAttributes;
     await transaction.commit();
-    return await res.status(200).json({status: 200, data: newStock, notification: "Stock et detail de l'article ajoutés"})
+    return await res.status(201).json({status: 201, data: newStock, notification: "Stock et detail de l'article ajoutés"})
   } catch (error) {
     console.error(error)
     await transaction.rollback();

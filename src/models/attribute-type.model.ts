@@ -17,12 +17,12 @@ export const AttributeType = sequelize.define("attributeType",
     attribute_type_key: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true
+      
     },
     attribute_type_label: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true
+      unique: 'compositeIndex'
     }
   }
 );

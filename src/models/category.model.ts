@@ -16,7 +16,7 @@ const Category = sequelize.define("category", {
   code: {
     type: Sequelize.STRING,
     allowNull: false,
-    unique: true
+    unique: 'compositeIndex'
   },
   label: {
     type: Sequelize.STRING,

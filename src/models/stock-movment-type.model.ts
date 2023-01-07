@@ -12,12 +12,12 @@ export const StockMovmentType = sequelize.define("stock_movment_type", {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         allowNull: false,
-        unique: true
+        unique: 'compositeIndex'
     },
     movment: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
+        unique: 'compositeIndex'
     }
 });
 

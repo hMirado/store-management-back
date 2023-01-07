@@ -31,7 +31,7 @@ app.use(
 );
 app.use(cors());
 
-sequelize.sync({ alter: true });
+sequelize.sync({ alter: true, force: false });
 
 /*sequelize
   .sync({ force: true })
