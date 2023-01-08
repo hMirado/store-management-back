@@ -12,6 +12,7 @@ import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.ser
 import { getProductByUuid, getProductById } from "../services/product.service";
 import { createMultipleSerialization } from '../services/serialization.service';
 import { createMultipleAttribute } from '../services/attribute.service';
+const sequelize = require("../config/db.config");
 const model = require("../models/index");
 
 module.exports.addStock = async (req: Request, res: Response) => {
@@ -73,7 +74,6 @@ export const qetStockHandler = async (req: Request, res: Response) => {
   }
 }
 
-const sequelize = require("../config/db.config");
 export const createOrUpdateStockHandler = async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   var newStock: any = {};
@@ -86,8 +86,6 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
 
     const product = await getProductById(productId);
     if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
-    const uniqueId: string = `${productId}-${random}`;
-
     const stockMovmentType = await getStockMovmentTypeByMovment('IN');
     const stock = await getStockById(shop.shop_id, product.product_id);
     if (stock && stock.stock_id) {
@@ -119,7 +117,7 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
         return {
           fk_product_id: product.product_id,
           attribute: value.attribute,
-          attribute_serialization:uniqueId,
+          attribute_serialization: `${random}${value.id}`,
           fk_attribute_type_id: value.attribute_type
         }
       });
@@ -129,7 +127,7 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
       const serializations = detail.serializations.map((value: any)=> {
         return {
           serialization_value: value.value,
-          attribute_serialization:uniqueId,
+          attribute_serialization:`${random}${value.id}`,
           fk_serialization_type_id: value.type,
           fk_product_id: product.product_id,
           fk_shop_id: shop.shop_id

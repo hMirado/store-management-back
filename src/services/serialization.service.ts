@@ -31,3 +31,35 @@ export const getSerializationByValue = async (value: string, type: number) => {
     throw error;
   }
 }
+
+export const getSerializationByProductShop = async (productId: number, shopId: number) => {
+  let condition = {}
+  if (shopId > 0) {
+    condition = {shop_id: shopId}
+  }
+  try {
+    return await model.Serialization.findAll(
+      {
+        include: [
+          {
+            model: model.SerializationType
+          },
+          {
+            model: model.Shop,
+            where: condition
+          },
+          {
+            model: model.Product,
+            where: {
+              product_id: productId
+            }
+          }
+        ]
+      }
+    )
+  } catch (error: any) {
+    console.log('\nserialization.servie::getProductSerialization');
+    console.log(error);
+    throw new Error(error);
+  }
+}

@@ -13,6 +13,7 @@ const stockRouter = require("./routes/stock.route");
 const userRouer = require("./routes/user.route");
 const authRoute = require("./routes/authentication.route");
 const typeRoute = require("./routes/serialization-type.route");
+const serializationRoute = require("./routes/serialization.route");
 const attributeTypeRoute = require("./routes/attribute-type.route");
 const Seed = require("./seeds/index");
 
@@ -53,6 +54,7 @@ app.use("/stock", stockRouter);
 app.use("/user", userRouer);
 app.use("/authentication", authRoute);
 app.use("/type", typeRoute);
+app.use("/serialization", serializationRoute);
 app.use("/attribute-type", attributeTypeRoute);
 
 
