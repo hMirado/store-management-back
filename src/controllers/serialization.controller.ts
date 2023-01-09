@@ -9,6 +9,7 @@ export const getSerializationByProductShopHanlder = async (req: Request, res: Re
     let shopId: number = 0
     if (shopUuid && shopUuid != '') {
       const shop = await getShopByUuid(req.query.shop as string);
+      if (!shop) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inéxitant'});
       shopId = shop.shop_id
     }
     const product = await getProductByUuid(req.params.product);
