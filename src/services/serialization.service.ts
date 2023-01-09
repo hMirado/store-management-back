@@ -70,6 +70,7 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
           fk_product_id: serialization.fk_product_id,
           fk_serialization_type_id: serialization.fk_serialization_type_id,
           fk_shop_id: serialization.fk_shop_id,
+          serialization_type_code: serialization.serialization_type.code,
           serialization_type_label: serialization.serialization_type.label
         }
       )
