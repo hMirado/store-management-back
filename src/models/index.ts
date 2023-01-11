@@ -323,6 +323,7 @@ Role.belongsToMany(
   }
 );
 
+
 module.exports = { 
   Company, 
   Shop, 
