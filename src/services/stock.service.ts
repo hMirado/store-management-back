@@ -5,6 +5,7 @@ import { Request } from "express";
 import { toLowerKeys } from "../helpers/format";
 import { Buffer } from "buffer";
 import { getPagination, getPagingData } from "../helpers/pagination";
+import { Op } from "sequelize";
 
 export const getStockByIdAndShop = async (product: number, shop: number) => {
   try {
@@ -189,7 +190,41 @@ export const addStockMovment = async (value: typeof model.StockMovment, transact
 };
 
 export const getProductsInStock = async (req: Request, shop: string) => {
+  let productCondition: any = {}
+  if (req.query.keyword) {
+    productCondition[Op.or] = [
+      {
+        code: { [Op.like]: `%${req.query.keyword}%` }
+      },
+      {
+        label: { [Op.like]: `%${req.query.keyword}%` }
+      }
+    ];
+  }
+
+  if (req.query.serialization == 'yes') productCondition['is_serializable'] = true;
+  else if (req.query.serialization == 'no') productCondition['is_serializable'] = false;
+
+  let quantityCondition: any = {}
+  if (req.query.status) {
+    if (req.query.status == 'in') {
+      quantityCondition = { 
+        quantity: { 
+          [ Op.gt ]: 0
+        }  
+      }
+    } else if (req.query.status == 'out') {
+      quantityCondition = { 
+        quantity: { 
+          [ Op.eq ]: 0
+        }  
+      }
+    }
+  }
+
   try {
+    console.log(productCondition);
+    
     if (req.query.paginate && req.query.paginate == '1')
     {
       const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
@@ -206,9 +241,11 @@ export const getProductsInStock = async (req: Request, shop: string) => {
               }
             },
             {
-              model: model.Product
+              model: model.Product,
+              where: productCondition
             }
           ],
+          where: quantityCondition,
           offset,
           limit,
           order: [

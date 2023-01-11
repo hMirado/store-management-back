@@ -20,6 +20,11 @@ const Attribute = sequelize.define("attribute", {
   attribute_serialization: {
     type: Sequelize.STRING,
     allowNull: false,
+  },
+  is_sold: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: false,
+    allowNull: false
   }
 });
 
