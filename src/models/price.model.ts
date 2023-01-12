@@ -1,34 +1,25 @@
 import Sequelize, { BOOLEAN } from "sequelize";
 const sequelize = require("../config/db.config");
 
-const Product = sequelize.define("product", {
-  product_id: {
+export const Price = sequelize.define("price", {
+  price_id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
     primaryKey: true,
     allowNull: false,
   },
-  product_uuid: {
+  price_uuid: {
     type: Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
     allowNull: false,
     unique: 'compositeIndex'
   },
-  code: {
-    type: Sequelize.STRING,
-    allowNull: false,
-    unique: 'compositeIndex'
-  },
-  label: {
-    type: Sequelize.STRING,
+  ht_price: {
+    type: Sequelize.BIGINT,
     allowNull: false
   },
-  is_serializable: 
-  {
-    type: Sequelize.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
-  }
-});
-
-module.exports = Product;
+  ttc_price: {
+    type: Sequelize.BIGINT,
+    allowNull: false
+  },
+})
