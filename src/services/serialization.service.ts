@@ -34,11 +34,6 @@ export const getSerializationByValue = async (value: string, type: number) => {
 }
 
 export const getSerializationByProductShop = async (productId: number, shopId: number, isSold: string | null = null) => {
-  // let condition = {}
-  // if (shopId > 0) {
-  //   condition = {shop_id: shopId}
-  // }
-
   const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.attribute_serialization, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
   let query = `
     SELECT ${column} FROM serializations sr
@@ -58,25 +53,6 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
         type: QueryTypes.SELECT
       }
     )
-    // const serializations: typeof model.Serialization =  await model.Serialization.findAll(
-    //   {
-    //     include: [
-    //       {
-    //         model: model.SerializationType
-    //       },
-    //       {
-    //         model: model.Shop,
-    //         where: condition
-    //       },
-    //       {
-    //         model: model.Product,
-    //         where: {
-    //           product_id: productId
-    //         }
-    //       }
-    //     ]
-    //   }
-    // )
 
     let serializationsGrouped: any[] = [];
     serializations.forEach((serialization: typeof model.Serialization ) => {

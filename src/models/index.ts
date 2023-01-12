@@ -13,6 +13,7 @@ import { Role } from './role.model';
 import { Authorization } from './authorization.model';
 import { AuthorizationRole } from './authorization-role.model';
 import { AttributeType } from './attribute-type.model';
+import { Price } from './price.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -324,11 +325,51 @@ Role.belongsToMany(
 );
 
 
+/**
+ * @summary: PRODUCT & PRICE 
+ * @description: Relation between product and price
+ */
+Product.hasMany(Price, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  sourceKey: "product_id"
+});
+Price.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id"
+});
+
+/**
+ * @summary: PRICE & ATTRIBUTE
+ * @description: Relation between price and attribute
+ */
+Price.hasMany(Attribute, {
+  foreignKey: {
+    name: "fk_price_id",
+    allowNull: false
+  },
+  sourceKey: "price_id"
+});
+Attribute.belongsTo(Price, {
+  foreignKey: {
+    name: "fk_price_id",
+    allowNull: false
+  },
+  targetKey: "price_id"
+});
+
+
 module.exports = { 
   Company, 
   Shop, 
   Category, 
-  Product, 
+  Product,
+  Price,
   Attribute,
   AttributeType,
   Stock, 
