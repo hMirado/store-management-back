@@ -24,9 +24,10 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
       const size = req.query.size ? req.query.size : 10;
       const { limit, offset } = getPagination(page, +size)
   
-      const products: typeof model.Product[] = await model.Product.findAndCountAll({
+      const products: typeof model.Product = await model.Product.findAll({
         include:[
-          { model: model.Category}
+          { model: model.Category},
+          { model: model.Price }
         ],
         where: conditions,
         offset,
@@ -35,8 +36,48 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
           ['label', 'ASC']
         ],
       });
-  
-      return getPagingData(products, +page, 10);
+
+      let formatedProducts: any[] = [];
+      //console.log(products);
+      
+      products.forEach((product: typeof model.Product, i: number) => {
+        let lowPrice: number = 0;
+        let highPrice: number = 0;
+        const prices = product.prices
+        console.log(product);
+        
+        prices.forEach((price: typeof model.Price, index: number) => {
+          const ttcPrice =price.ttc_price;
+          if (index == 0) {
+            lowPrice = ttcPrice;
+            highPrice = ttcPrice;
+          } else if (highPrice < ttcPrice && lowPrice < ttcPrice) {
+            highPrice = ttcPrice;
+          } else if (highPrice > ttcPrice && lowPrice > ttcPrice) {
+            lowPrice = ttcPrice;
+          }
+        })
+        const newProduct = {
+          product_id: product.product_id,
+          product_uuid: product.product_uuid,
+          code: product.code,
+          label: product.label,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+          is_serializable: product.is_serializable,
+          fk_category_id: product.fk_category_id,
+          category: product.category,
+          prices: product.prices,
+          low_price: lowPrice,
+          high_price: highPrice
+        }
+        formatedProducts.push(newProduct)
+      });
+      const result = {
+        count: products.length,
+        rows: formatedProducts
+      }
+      return getPagingData(result, +page, 10);
     } else {
       return await model.Product.findAll(
         {
@@ -49,8 +90,11 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
       );
     }
 
-  } catch (error) {
-    throw error;
+  } catch (error: any) {
+    console.log("error");
+    console.log(error);
+    
+    throw new Error(error);
   }
 }
 

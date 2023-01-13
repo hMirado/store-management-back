@@ -5,7 +5,9 @@ import {
   getStockById, 
   createStock, 
   editStock, 
-  createStockMovment 
+  createStockMovment,
+  countProductInStock,
+  countProductOutStock
 } from '../services/stock.service'
 import { getShopByUuid } from '../services/shop.service'
 import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.service'
@@ -28,10 +30,12 @@ module.exports.addStock = async (req: Request, res: Response) => {
 }
 
 export const getProductsInStockHandler = async (req: Request, res: Response) => {
-  const shopUuid: string = req.params.shop
+  const shopUuid: string|null = req.query.shop ? req.query.shop as string : null
   try {
-    const shop = await getShopByUuid(shopUuid);
-    if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
+    if (shopUuid) {
+      const shop = await getShopByUuid(shopUuid);
+      if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
+    }
     
     const stock = await getProductsInStock(req, shopUuid);
     return await res.status(200).json({status: 200, data: stock, notification: 'Liste des stocks récupérés.'})
@@ -152,9 +156,35 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
     }
     await transaction.commit();
     return await res.status(201).json({status: 201, data: newStock, notification: "Stock et detail de l'article ajoutés"})
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
     await transaction.rollback();
     return res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const countStock = async (req: Request, res: Response) => {
+  const shopUuid: string|null = req.query.shop ? req.query.shop as string : null;
+  let shopId: number|null = null;
+  try {
+    
+    if (shopUuid) {
+      const shop: typeof model.Shop = await getShopByUuid(shopUuid);
+      if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
+      shopId = shop.shop_id;
+    }
+
+    const inStock = await countProductInStock(shopId);
+    const outStock = await countProductOutStock(shopId);
+
+    const result = {
+      in: inStock,
+      out: outStock
+    }
+
+    return await res.status(200).json({status: 200, data: result, notification: "Total des stocks"})
+
+  } catch (error: any) {
+    return await res.status(500).json({ error: error, notification: "Erreur système" });
   }
 }

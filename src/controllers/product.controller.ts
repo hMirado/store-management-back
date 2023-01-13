@@ -9,7 +9,7 @@ import { getShopByUuid } from "../services/shop.service";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
-    const products: typeof model.Product = await getProducts(req);
+    const products: any = await getProducts(req);
 		return res.status(200).json({status: 200, data: products, notification: 'Listes des Articles'});
   } catch (error) {
 		return res.status(500).json({ error: error, notification: 'Erreur système'});
