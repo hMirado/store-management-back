@@ -12,7 +12,7 @@ export const getStockByIdAndShop = async (product: number, shop: number) => {
       }
     })
   } catch (error: any) {
-    throw error;
+    throw new Error(error);
   }
 };
 
@@ -20,7 +20,7 @@ export const addStock = async (value: typeof model.Stock, transaction: IDBTransa
   try {
     return await model.Stock.create(value, {transaction: transaction})
   } catch (error: any) {
-    throw error
+    throw new Error(error);
   }
 };
 
@@ -48,7 +48,7 @@ export const addStockMovment = async (value: typeof model.StockMovment, transact
   }
 };
 
-export const getProductsInStock = async (req: Request, shop: string) => {
+export const getProductsInStock = async (req: Request, shop: string|null = null) => {
   let productCondition: any = {}
   if (req.query.keyword) {
     productCondition[Op.or] = [
@@ -81,9 +81,10 @@ export const getProductsInStock = async (req: Request, shop: string) => {
     }
   }
 
+  let shopCondition: any = {}
+  if (shop) shopCondition['shop_uuid']= shop
+
   try {
-    console.log(productCondition);
-    
     if (req.query.paginate && req.query.paginate == '1')
     {
       const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
@@ -95,9 +96,7 @@ export const getProductsInStock = async (req: Request, shop: string) => {
           [
             {
               model: model.Shop,
-              where: {
-                shop_uuid: shop
-              }
+              where: shopCondition
             },
             {
               model: model.Product,
@@ -136,7 +135,7 @@ export const getProductsInStock = async (req: Request, shop: string) => {
       return stocks;
     }
   } catch (error: any) {
-    throw error;
+    throw new Error(error);
   }
 }
 
@@ -166,7 +165,7 @@ export const getStock = async (shop: string, product :string) => {
     })
     return stocks;
   } catch (error: any) {
-    throw error;
+    throw new Error(error);
   }
 }
 
@@ -190,10 +189,10 @@ export const getStockById = async (shopId: number, productId: number) => {
         ]
       }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.log('\nstock.servie::getStockById');
     console.log(error);
-    throw error;
+    throw new Error(error);
   }
 }
 
@@ -208,10 +207,10 @@ export const createStock = async (stock: typeof model.Stock, _transaction: IDBTr
         transaction: _transaction
       }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.log('\nstock.servie::createStock');
     console.log(error);
-    throw error;
+    throw new Error(error);
   }
 }
 
@@ -221,19 +220,60 @@ export const editStock = async (quantity: number, stockId: number, _transaction:
       { quantity: quantity },
       { where: { stock_id: stockId } }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.log('\nstock.servie::editStock');
     console.log(error);
-    throw error;
+    throw new Error(error);
   }
 }
 
 export const createStockMovment = async (stockMovments: typeof model.StockMovment[], _transaction: IDBTransaction | any = null) => {
   try {
     return await model.StockMovment.bulkCreate(stockMovments, { transaction: _transaction });
-  } catch (error) {
+  } catch (error: any) {
     console.log('\nstock.servie::createStockMovment');
     console.log(error);
-    throw error;
+    throw new Error(error);
+  }
+}
+
+export const countProductInStock = async (shopId: number|null = null) => {
+  let conditions: any = {
+    quantity: { 
+      [ Op.gt ]: 0
+    },
+  }
+  if (shopId) conditions['fk_shop_id'] = shopId;
+  try {
+    return await model.Stock.count(
+      {
+        where: conditions
+      }
+    )
+  } catch (error: any) {
+    console.log('\nstock.servie::countProductInStock');
+    console.log(error);
+    throw new Error(error);
+    ;
+  }
+}
+
+export const countProductOutStock = async (shopId: number|null = null) => {
+  let conditions: any = {
+    quantity: { 
+      [ Op.eq ]: 0
+    },
+  }
+  if (shopId) conditions['fk_shop_id'] = shopId;
+  try {
+    return await model.Stock.count(
+      {
+        where: conditions
+      }
+    )
+  } catch (error:any) {
+    console.log('\nstock.service::countProductOutStock');
+    console.log(error);
+    throw new Error(error);
   }
 }
