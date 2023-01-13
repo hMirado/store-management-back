@@ -9,6 +9,7 @@ const roleSeed = require('./role.seed');
 const authorizationRoleAdminSeed = require('./authorization-role-admin.seed');
 const userSeed = require('./user.seed');
 const attributeTypeSeed = require('./attribute-type.seed');
+const statusTransferSeed = require('./statust-transfert.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -18,7 +19,8 @@ module.exports = () => {
     createSerializationTypeSeed(),
     authorizationSeed(),
     roleSeed(),
-    attributeTypeSeed()
+    attributeTypeSeed(),
+    statusTransferSeed()
   ]).then(() => {
     [
       ShopSeed(),
