@@ -14,7 +14,7 @@ import { Authorization } from './authorization.model';
 import { AuthorizationRole } from './authorization-role.model';
 import { AttributeType } from './attribute-type.model';
 import { Price } from './price.model';
-import { TransfertStatus } from "./status-transfert.model";
+import { StatusTransfer } from "./status-transfert.model";
 import { StockTransfer } from "./stock-transfert.model";
 
 /**
@@ -370,14 +370,14 @@ Attribute.belongsTo(Price, {
  * @summary: TransfertStatus & StockTransfer
  * @description: Relation between TransfertStatus and StockTransfer
  */
-TransfertStatus.hasMany(StockTransfer, {
+StatusTransfer.hasMany(StockTransfer, {
   foreignKey: {
     name: "fk_transfer_status_id",
     allowNull: false
   },
   sourceKey: "status_transfert_id"
 });
-StockTransfer.belongsTo(TransfertStatus, {
+StockTransfer.belongsTo(StatusTransfer, {
   foreignKey: {
     name: "fk_transfer_status_id",
     allowNull: false
@@ -489,6 +489,6 @@ module.exports = {
   User,
   Authorization,
   AuthorizationRole,
-  TransfertStatus,
+  StatusTransfer,
   StockTransfer
 };

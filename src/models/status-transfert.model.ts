@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 const sequelize = require("../config/db.config");
 
-export const TransfertStatus = sequelize.define("status_transfert", {
+export const StatusTransfer = sequelize.define("status_transfert", {
   status_transfert_id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,

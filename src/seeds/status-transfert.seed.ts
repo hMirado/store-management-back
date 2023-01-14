@@ -1,7 +1,7 @@
-import { TransfertStatus } from "../models/status-transfert.model";
+import { StatusTransfer } from "../models/status-transfert.model";
 
 module.exports = () => {
-  return TransfertStatus.bulkCreate([
+  return StatusTransfer.bulkCreate([
     {
       status_code: 'IN_PROGRESS',
       status_label: 'en cours'

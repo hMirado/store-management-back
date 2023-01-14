@@ -77,7 +77,7 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
     const product: typeof model.Product = await getProductById(productId);
     if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
     
-    const stockMovmentType = await getStockMovmentTypeByMovment('IN');
+    const stockMovmentType = await getStockMovmentTypeByMovment('IN-IMPORT');
     
     const stock = await getStockById(shop.shop_id, product.product_id);
     if (stock && stock.stock_id) {

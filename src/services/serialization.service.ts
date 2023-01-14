@@ -5,8 +5,10 @@ const sequelize = require("../config/db.config");
 export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: IDBTransaction | any = null) => {
   try {
     return await model.Serialization.bulkCreate(value, { transaction: _transaction });
-  } catch (error) {
-    throw error
+  } catch (error: any) {
+    console.log('\nserialization.service::createMultipleSerialization');
+    console.log(error);
+    throw new Error(error);
   }
 };
 
@@ -84,7 +86,37 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
 
     return results;
   } catch (error: any) {
-    console.log('\nserialization.servie::getProductSerialization');
+    console.log('\nserialization.service::getProductSerialization');
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export const getAttributeSerializationBySerialization = async (productId: number, type: number, serialization: number) => {
+  try {
+    return await model.Serialization.findOne({
+      where: {
+        serialization_value: serialization,
+        fk_product_id: productId,
+        fk_serialization_type_id: type
+      }
+    });
+  } catch (error: any) {
+    console.log('\nserialization.service::getAttributeSerializationBySerialization');
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export const updateSerializationShopByAttribute = async (attribute: string, shopId: number, _transaction: IDBTransaction | any = null) => {
+  try {
+    return await model.Serialization.update(
+      { fk_shop_id: shopId },
+      { where: { attribute_serialization: attribute } },
+      { transaction: _transaction }
+    )
+  } catch (error: any) {
+    console.log('\nserialization.service::updateSerializationByAttribute');
     console.log(error);
     throw new Error(error);
   }

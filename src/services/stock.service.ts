@@ -218,7 +218,8 @@ export const editStock = async (quantity: number, stockId: number, _transaction:
   try {
     return await model.Stock.update(
       { quantity: quantity },
-      { where: { stock_id: stockId } }
+      { where: { stock_id: stockId } },
+      { transaction: _transaction }
     );
   } catch (error: any) {
     console.log('\nstock.servie::editStock');

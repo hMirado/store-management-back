@@ -5,10 +5,19 @@ import {StockMovmentType} from '../models/stock-movment-type.model'
 module.exports = () => {
     return StockMovmentType.bulkCreate([
         {
-            movment: 'IN'
+            movment: 'IN-IMPORT'
         },
         {
-            movment: 'OUT'
+            movment: 'IN-TRANSFER'
+        },
+        {
+            movment: 'IN-TRANSFER-CANCELLED'
+        },
+        {
+            movment: 'OUT-TRANSFER'
+        },
+        {
+            movment: 'OUT-SELL'
         }
     ]).then( () => console.log('Seed StockMovmentType complete'))
 }
