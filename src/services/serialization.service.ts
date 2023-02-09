@@ -41,13 +41,15 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
     SELECT ${column} FROM serializations sr
     INNER JOIN serialization_types st ON sr.fk_serialization_type_id = st.serialization_type_id
     INNER JOIN shops s ON sr.fk_shop_id = s.shop_id
+    INNER JOIN stocks sto ON sr.fk_shop_id = sto.fk_shop_id
     INNER JOIN products p ON sr.fk_product_id = p.product_id
     INNER JOIN attributes a ON sr.attribute_serialization = a.attribute_serialization
-    WHERE p.product_id = ${productId} 
+    WHERE p.product_id = ${productId}
   `;
   try {
     query += shopId > 0 ? ` AND s.shop_id = ${shopId}` : '';
     query += (isSold && isSold != '') ? ` AND a.is_sold = ${+isSold}` : '';
+    query += ' GROUP BY sr.serialization_id'
     
     const serializations: typeof model.Serialization =  await sequelize.query(
       query, 
@@ -92,7 +94,7 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
   }
 }
 
-export const getAttributeSerializationBySerialization = async (productId: number, type: number, serialization: number) => {
+export const getSerializationByProduct_Type_Value = async (productId: number, type: number, serialization: string) => {
   try {
     return await model.Serialization.findOne({
       where: {
@@ -102,17 +104,24 @@ export const getAttributeSerializationBySerialization = async (productId: number
       }
     });
   } catch (error: any) {
-    console.log('\nserialization.service::getAttributeSerializationBySerialization');
+    console.log('\nserialization.service::getSerializationByProduct_Type_Value');
     console.log(error);
     throw new Error(error);
   }
 }
 
-export const updateSerializationShopByAttribute = async (attribute: string, shopId: number, _transaction: IDBTransaction | any = null) => {
+export const updateSerializationTransfer = async (attribute: string, shopId: number, isInTransfer: boolean = false,_transaction: IDBTransaction | any = null) => {
+  const newValue: any = {
+    fk_shop_id: shopId,
+    isInTransfer: isInTransfer
+  }
   try {
     return await model.Serialization.update(
-      { fk_shop_id: shopId },
-      { where: { attribute_serialization: attribute } },
+      newValue,
+      { 
+        where: { attribute_serialization: attribute },
+        returning: true
+      },
       { transaction: _transaction }
     )
   } catch (error: any) {

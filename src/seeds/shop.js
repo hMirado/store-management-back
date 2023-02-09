@@ -3,8 +3,8 @@ const Shop = require("../models/shop.model");
 module.exports = function () {
 	return Shop.bulkCreate([
 		{
-			shop_name: "Global",
-			shop_location: "Global",
+			shop_name: "Dépôt",
+			shop_location: "Dépôt",
 			shop_box: "1",
 			city: "Antananarivo",
 			shop_login: "test-1",
