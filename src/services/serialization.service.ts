@@ -49,6 +49,7 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
   try {
     query += shopId > 0 ? ` AND s.shop_id = ${shopId}` : '';
     query += (isSold && isSold != '') ? ` AND a.is_sold = ${+isSold}` : '';
+    query += ' AND isInTransfer = false';
     query += ' GROUP BY sr.serialization_id'
     
     const serializations: typeof model.Serialization =  await sequelize.query(

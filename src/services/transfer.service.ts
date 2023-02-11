@@ -36,7 +36,7 @@ export const getAllTransfer = async (params: any) => {
       sequelize.where(sequelize.col('code'), { [Op.like]: `%${params['keyword']}%`}),
     ]
   }
-  if (params['status']) statusCondition['transfer_status_uuid'] = params['status']
+  if (params['status']) statusCondition['transfer_status_code'] = params['status']
   if (params['date']) conditions['updatedAt'] = {[Op.startsWith]: params['date']};
 
   if (params['currentUser']) {
@@ -153,7 +153,7 @@ export const getTransfer = async (uuid: string) => {
   try {
     return await model.Transfer.findOne(
       {
-        include: model.TransferStatus,
+        include: [model.TransferStatus, model.Product],
         where: {
           transfer_uuid: uuid
         }
@@ -165,57 +165,125 @@ export const getTransfer = async (uuid: string) => {
   }
 }
 
-export const getTransferByUuidByShop = async (uuid: string, shopId: number) => {
+export const getTransferByUuidByShop = async (uuid: string, shopId: number, inProgress: boolean) => {
   try {
-    return await model.Transfer.findOne(
+    const product = await model.Product.findOne(
       {
-        attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
-        include: [
-          {
-            model: model.Product,
-            include: {
-              model: model.Serialization,
-              include: model.SerializationType,
-              where: {
-                fk_shop_id: shopId,
-                isInTransfer: true
-              }
-            }
-          },
-          {
-            model: model.TransferStatus,
-            attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"]
-          },
-          {
-            model: model.User,
-            as: 'user_sender',
-            attributes: ["user_id", "user_uuid", "first_name", "last_name"]
-          },
-          {
-            model: model.User,
-            as: 'user_receiver',
-            attributes: ["user_id", "user_uuid", "first_name", "last_name"]
-          },
-          {
-            model: model.Shop,
-            as: 'shop_sender',
-            attributes: ["shop_id", "shop_uuid", "shop_name"]
-          },
-          {
-            model: model.Shop,
-            as: 'shop_receiver',
-            attributes: ["shop_id", "shop_uuid", "shop_name"]
+        include: {
+          model: model.Transfer,
+          where: {
+            transfer_uuid: uuid
           }
-        ],
-        where: {
-          transfer_uuid: uuid
         }
       }
     )
+
+    if (product.is_serializable) {
+      return transferProductWithSerialization(uuid, shopId, inProgress);
+    } else {
+      return transferProductWithOutSerialization(uuid, shopId, inProgress);
+    }
   } catch (error: any) {
     console.log("\n transfer.service::getTransferByUuidByShop");
     throw new Error(error);
   }
+}
+
+const transferProductWithSerialization = async (uuid: string, shopId: number, inProgress: boolean) => {
+  return await model.Transfer.findOne(
+    {
+      attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
+      include: [
+        {
+          model: model.Product,
+          include: {
+            model: model.Serialization,
+            include: model.SerializationType,
+            where: {
+              fk_shop_id: shopId,
+              [Op.or]: [
+                {
+                  isInTransfer: inProgress
+                },
+                { 
+                  updatedAt: {
+                    [Op.eq]: sequelize.literal(`(select updatedAt from transfers where transfer_uuid = '${uuid}')`)
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          model: model.TransferStatus,
+          attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"]
+        },
+        {
+          model: model.User,
+          as: 'user_sender',
+          attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+        },
+        {
+          model: model.User,
+          as: 'user_receiver',
+          attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+        },
+        {
+          model: model.Shop,
+          as: 'shop_sender',
+          attributes: ["shop_id", "shop_uuid", "shop_name"]
+        },
+        {
+          model: model.Shop,
+          as: 'shop_receiver',
+          attributes: ["shop_id", "shop_uuid", "shop_name"]
+        }
+      ],
+      where: {
+        transfer_uuid: uuid
+      }
+    }
+  )
+}
+
+const transferProductWithOutSerialization = async (uuid: string, shopId: number, inProgress: boolean) => {
+  return await model.Transfer.findOne(
+    {
+      attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
+      include: [
+        {
+          model: model.Product
+        },
+        {
+          model: model.TransferStatus,
+          attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"]
+        },
+        {
+          model: model.User,
+          as: 'user_sender',
+          attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+        },
+        {
+          model: model.User,
+          as: 'user_receiver',
+          attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+        },
+        {
+          model: model.Shop,
+          as: 'shop_sender',
+          attributes: ["shop_id", "shop_uuid", "shop_name"]
+        },
+        {
+          model: model.Shop,
+          as: 'shop_receiver',
+          attributes: ["shop_id", "shop_uuid", "shop_name"]
+        }
+      ],
+      where: {
+        transfer_uuid: uuid
+      }
+    }
+  )
 }
 
 export const getAttributeSerializationTransfer = async (shop: number, product: number, isInTransfer: boolean = true) => {
@@ -259,8 +327,6 @@ export const updateIsInTransferSerializationTransfer = async (shop: number, prod
 
 export const updateTransfer = async (transferId: number, value: any, _transaction: IDBTransaction) => {
   try {
-    console.log(value);
-    
     return await model.Transfer.update(
       value,
       {
