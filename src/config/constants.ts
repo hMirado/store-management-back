@@ -27,3 +27,7 @@ export const authorization = {
   PAGE_ELEMENT_EDIT_VIEW_USER_ROLE: "PAGE_ELEMENT_EDIT_VIEW_USER_ROLE",
   PAGE_ELEMENT_DISABLE_ROLE: "PAGE_ELEMENT_DISABLE_ROLE",
 };
+
+export const transferStatus = {
+  inProgress: "IN_PROGRESS"
+}

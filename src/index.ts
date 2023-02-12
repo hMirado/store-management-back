@@ -15,6 +15,7 @@ const authRoute = require("./routes/authentication.route");
 const typeRoute = require("./routes/serialization-type.route");
 const serializationRoute = require("./routes/serialization.route");
 const attributeTypeRoute = require("./routes/attribute-type.route");
+const transferRoute = require("./routes/transfer.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -32,18 +33,18 @@ app.use(
 );
 app.use(cors());
 
-sequelize.sync({ alter: false, force: false });
+//sequelize.sync({ alter: false, force: false });
 
-/*sequelize
-  .sync({ force: true })
-  .then(() => Seed())
-  .then(() => {
-    console.log("\nDrop and resync db.\n");
-  })
-  .catch((error: Error) => {
-    console.log("\nERROR : \n");
-    console.log(error);
-  });*/
+// sequelize
+//   .sync({ force: true })
+//   .then(() => Seed())
+//   .then(() => {
+//     console.log("\nDrop and resync db.\n");
+//   })
+//   .catch((error: Error) => {
+//     console.log("\nERROR : \n");
+//     console.log(error);
+//   });
 
 app.use("/company", companyRoutes);
 app.use("/shop", shopRoutes);
@@ -56,6 +57,7 @@ app.use("/authentication", authRoute);
 app.use("/type", typeRoute);
 app.use("/serialization", serializationRoute);
 app.use("/attribute-type", attributeTypeRoute);
+app.use("/transfer", transferRoute);
 
 
 const port = process.env.PORT || 3000;

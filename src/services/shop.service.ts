@@ -9,3 +9,13 @@ export const getShopByUuid = async (uuid: string) => {
     throw error;
   }
 }
+
+export const getShopById = async (id: number) => {
+  try {
+    return await model.Shop.findOne({
+      where: {shop_id: id}
+    })
+  } catch (error) {
+    throw error;
+  }
+}

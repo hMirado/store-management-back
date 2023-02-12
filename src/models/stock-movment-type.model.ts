@@ -18,6 +18,15 @@ export const StockMovmentType = sequelize.define("stock_movment_type", {
         type: Sequelize.STRING,
         allowNull: false,
         unique: 'compositeIndex'
+    },
+    label: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: 'compositeIndex'
+    },
+    description: {
+        type: Sequelize.STRING,
+        allowNull: true
     }
 });
 

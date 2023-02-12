@@ -1,29 +1,27 @@
 import Sequelize from "sequelize";
 const sequelize = require("../config/db.config");
 
-export const Attribute = sequelize.define("attribute", {
-  attribute_id: {
+export const TransferType = sequelize.define('transfer_type', {
+  transfer_type_id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
     primaryKey: true,
     allowNull: false,
   },
-  attribute_uuid: {
+  transfer_type_uuid: {
     type: Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
-    allowNull: false
+    allowNull: false,
+    unique: 'compositeIndex'
   },
-  attribute: {
+  transfer_type_code: {
     type: Sequelize.STRING,
     allowNull: false,
+    unique: 'compositeIndex'
   },
-  attribute_serialization: {
+  transfer_type_label: {
     type: Sequelize.STRING,
     allowNull: false,
+    unique: 'compositeIndex'
   },
-  is_sold: {
-    type: Sequelize.BOOLEAN,
-    defaultValue: false,
-    allowNull: false
-  }
-});
+})

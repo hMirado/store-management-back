@@ -1,6 +1,6 @@
 const Product = require("../models/product.model");
 
-module.exports = function() {
+module.exports = () => {
   return Product.bulkCreate([
     {
       code: 'ACCESS001',
@@ -26,5 +26,5 @@ module.exports = function() {
       is_serializable: true,
       fk_category_id: 5
     }
-  ]).then(_ => console.log('Seed product complete'));
+  ]).then(() => console.log('Seed product complete'));
 };

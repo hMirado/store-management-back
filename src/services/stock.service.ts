@@ -171,22 +171,16 @@ export const getStock = async (shop: string, product :string) => {
 
 export const getStockById = async (shopId: number, productId: number) => {
   try {
-    return await  model.Stock.findOne(
+    return await model.Stock.findOne(
       { 
         include: [
-          {
-            model: model.Shop,
-            where: {
-              shop_id: shopId
-            }
-          },
-          {
-            model: model.Product,
-            where: {
-              product_id: productId
-            }
-          }
-        ]
+          { model: model.Shop },
+          { model: model.Product }
+        ],
+        where: {
+          fk_shop_id: shopId,
+          fk_product_id: productId
+        }
       }
     );
   } catch (error: any) {
@@ -218,7 +212,8 @@ export const editStock = async (quantity: number, stockId: number, _transaction:
   try {
     return await model.Stock.update(
       { quantity: quantity },
-      { where: { stock_id: stockId } }
+      { where: { stock_id: stockId } },
+      { transaction: _transaction }
     );
   } catch (error: any) {
     console.log('\nstock.servie::editStock');

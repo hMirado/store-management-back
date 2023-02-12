@@ -1,6 +1,6 @@
 const Category = require("../models/category.model");
 
-module.exports = function () {
+module.exports = () => {
 	return Category.bulkCreate([
 		{
       code: 'ACCES',
@@ -26,5 +26,5 @@ module.exports = function () {
       code: 'TAB',
 			label: "Tablette",
 		},
-	]).then(_ => console.log('Seed category complete'));
+	]).then(() => console.log('Seed category complete'));
 };
