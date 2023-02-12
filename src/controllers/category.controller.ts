@@ -6,7 +6,7 @@ const model = require("../models/index");
 const fs = require("fs");
 var XLSX = require('xlsx');
 
-module.exports.getCategories = async (req: IGetUserAuthInfoRequest, res: Response) => {
+module.exports.getCategories = async (req: Request, res: Response) => {
 	try {
     const categories: typeof model.Category = await getCategories(req);
 		return res
@@ -34,7 +34,7 @@ export const countCategories = async (req: Request, res: Response) => {
   }
 };
 
-export const createCategories = async (req: IGetUserAuthInfoRequest, res: Response) => {
+export const createCategories = async (req: Request, res: Response) => {
   try {
     const newCategories = await createCategory(req.body);
     return res.status(201).json({status: 201, data: newCategories, notification: 'Catégories enregistrées avec succès'});

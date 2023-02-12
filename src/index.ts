@@ -33,7 +33,7 @@ app.use(
 );
 app.use(cors());
 
-sequelize.sync({ alter: false, force: false });
+//sequelize.sync({ alter: false, force: false });
 
 // sequelize
 //   .sync({ force: true })

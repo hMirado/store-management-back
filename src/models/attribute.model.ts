@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 const sequelize = require("../config/db.config");
 
-const Attribute = sequelize.define("attribute", {
+export const Attribute = sequelize.define("attribute", {
   attribute_id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -27,5 +27,3 @@ const Attribute = sequelize.define("attribute", {
     allowNull: false
   }
 });
-
-module.exports = Attribute;
