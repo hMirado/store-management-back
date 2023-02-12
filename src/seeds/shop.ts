@@ -1,4 +1,4 @@
-const Shop = require("../models/shop.model");
+import { Shop } from "../models/shop.model";
 
 module.exports = () => {
 	return Shop.bulkCreate([

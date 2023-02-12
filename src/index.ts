@@ -33,7 +33,7 @@ app.use(
 );
 app.use(cors());
 
-//sequelize.sync({ alter: false, force: false });
+sequelize.sync({ alter: false, force: false });
 
 // sequelize
 //   .sync({ force: true })
@@ -60,7 +60,7 @@ app.use("/attribute-type", attributeTypeRoute);
 app.use("/transfer", transferRoute);
 
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 app.listen(port, () => {
 	return console.log(`\nExpress is listening at http://localhost:${port}\n`);
 });

@@ -1,9 +1,9 @@
 const Category = require('./category.model');
-const Product = require('./product.model');
-const Attribute = require('./attribute.model');
+import { Product } from './product.model';
+import { Attribute } from './attribute.model';
 const Company = require('./company.model');
-const Shop = require('./shop.model');
 const Stock = require('./stock.model');
+import { Shop } from './shop.model';
 import { StockMovment } from './stock-movment.model';
 import { StockMovmentType } from './stock-movment-type.model';
 import { Serialization } from './serialization.model';
@@ -17,6 +17,7 @@ import { Price } from './price.model';
 import { TransferStatus } from "./transfer-status.model";
 import { Transfer } from "./transfer.model";
 import { TransferType } from './transfer-type.model';
+import { UserShop } from './user-shop.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -82,6 +83,13 @@ Product.belongsTo(Category, {
  * @summary: PRODUCT & ATTRIBUTE
  * @description: Relation between Product and Attribute
  */
+Attribute.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id",
+});
 Product.hasMany(Attribute, 
   {
     foreignKey: {
@@ -91,13 +99,6 @@ Product.hasMany(Attribute,
     sourceKey: "product_id"
   }
 );
-Attribute.belongsTo(Product, {
-  foreignKey: {
-    name: "fk_product_id",
-    allowNull: false
-  },
-  targetKey: "product_id",
-});
 
 
 /**
@@ -266,20 +267,26 @@ Shop.hasMany(Serialization, {
  * @summary: USER & SHOP
  * @description: Relation between user and shop
  */
-User.belongsTo(Shop, {
-  foreignKey: {
-    name: "fk_shop_id",
-    allowNull: false
-  },
-  targetKey: "shop_id"
-});
-Shop.hasMany(User, {
-  foreignKey: {
-      name: "fk_shop_id",
+User.belongsToMany(
+  Shop, 
+  { 
+    through: UserShop,
+    foreignKey: {
+      name: "user_id",
       allowNull: false
-  },
-  sourceKey: "shop_id"
-});
+    } 
+  }
+);
+Shop.belongsToMany(
+  User, 
+  { 
+    through: UserShop,
+    foreignKey: {
+      name: "shop_id",
+      allowNull: false
+    } 
+  }
+);
 
 
 /**
