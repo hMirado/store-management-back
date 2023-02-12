@@ -11,7 +11,7 @@ export const login = async (user: typeof User, password: string) => {
         {user},
         process.env.JWT_SECRET_KEY,
         {
-          expiresIn: "10h"
+          expiresIn: "12h"
         }
       )
 
@@ -23,7 +23,6 @@ export const login = async (user: typeof User, password: string) => {
           where: { user_id: user.user_id}
         }
       )
-
       if (userTokenSaved) return token;
     }
   } catch (error: any) {

@@ -1,7 +1,7 @@
 import { createUser } from "../services/user.service";
 import { User } from "../models/user.model";
 
-module.exports = () => {
+/* module.exports = () => {
   return User.bulkCreate([
     {
       "first_name": "Hobiniaina Mirado",
@@ -36,9 +36,9 @@ module.exports = () => {
       "fk_role_id": 2
     }
   ])
-}
+} */
 
-/*export const mirado = async () => {
+export const mirado = async () => {
   const {first_name, last_name, email, phone_number, password, fk_role_id} = {
     "first_name": "Hobiniaina Mirado",
     "last_name": "RAMAHATSANGIARISON",
@@ -48,9 +48,9 @@ module.exports = () => {
     "fk_role_id": 1
   };
   return await createUser(first_name, last_name, email, phone_number, password, fk_role_id);
-};*/
+};
 
-/*export const jenny = async () => {
+export const jenny = async () => {
   const {first_name, last_name, email, phone_number, password, fk_role_id} = {
     "first_name": "RANDRIA",
     "last_name": "Jenny",
@@ -60,9 +60,9 @@ module.exports = () => {
     "fk_role_id": 1
   };
   return await createUser(first_name, last_name, email, phone_number, password, fk_role_id);
-};*/
+};
 
-/*export const john = async () => {
+export const john = async () => {
   const {first_name, last_name, email, phone_number, password, fk_role_id} = {
     "first_name": "John",
     "last_name": "DOE",
@@ -72,9 +72,9 @@ module.exports = () => {
     "fk_role_id": 2
   };
   return await createUser(first_name, last_name, email, phone_number, password, fk_role_id);
-};*/
+};
 
-/*export const jane = async () => {
+export const jane = async () => {
   const {first_name, last_name, email, phone_number, password, fk_role_id} = {
     "first_name": "Jane",
     "last_name": "DOE",
@@ -84,4 +84,4 @@ module.exports = () => {
     "fk_role_id": 2
   };
   return await createUser(first_name, last_name, email, phone_number, password, fk_role_id);
-};*/
+};

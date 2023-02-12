@@ -11,7 +11,7 @@ const userSeed = require('./user.seed');
 const attributeTypeSeed = require('./attribute-type.seed');
 const transferStatusSeed = require('./transfer-status.seed');
 const transferTypeSeed = require('./transfer-type.seed');
-const userRoleSeed = require('./user-shop.seed');
+const userShopSeed = require('./user-shop.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -24,14 +24,18 @@ module.exports = () => {
     attributeTypeSeed(),
     transferStatusSeed(),
     transferTypeSeed(),
-    userSeed(),
+    userSeed.mirado(),
+    userSeed.jenny(),
+    userSeed.jane(),
+    userSeed.john(),
   ]).then(() => {
     [
       ShopSeed(),
       ProductSeed(),
-      authorizationRoleAdminSeed(),
-      userRoleSeed()
+      authorizationRoleAdminSeed()
     ];
+  }).then(() => {
+    userShopSeed()
   }).then(() => {
     console.log('\nSeed completed.\n')
   })
