@@ -19,18 +19,9 @@ const transferRoute = require("./routes/transfer.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
-app.use(
-	bodyParser.json({
-		limit: "30mb",
-		extends: true,
-	})
-);
-app.use(
-	bodyParser.urlencoded({
-		limit: "30mb",
-		extends: true,
-	})
-);
+
+app.use(bodyParser.json({limit: '50000mb'}));
+app.use(bodyParser.urlencoded({limit: '50000mb', parameterLimit: 100000000, extended: true}))
 app.use(cors());
 
 sequelize.sync({ alter: false, force: false });
@@ -58,7 +49,6 @@ app.use("/type", typeRoute);
 app.use("/serialization", serializationRoute);
 app.use("/attribute-type", attributeTypeRoute);
 app.use("/transfer", transferRoute);
-
 
 const port = process.env.PORT;
 app.listen(port, () => {

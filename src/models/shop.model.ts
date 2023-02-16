@@ -13,6 +13,10 @@ export const Shop = sequelize.define("shop", {
 		defaultValue: Sequelize.UUIDV4,
 		allowNull: false,
 	},
+	shop_code: {
+		type: Sequelize.STRING,
+		allowNull: true,
+	},
 	shop_name: {
 		type: Sequelize.STRING,
 		allowNull: false,

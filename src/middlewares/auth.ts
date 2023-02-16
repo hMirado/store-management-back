@@ -13,9 +13,11 @@ export const verifyToken = async (req: Request | any, res: Response, next: NextF
     if (!token) return res.status(403).json({ status: 403, error: 'Accès réfusé.', notification: 'Vous n\'avez pas accès. Veuillez vous connecter.'});
     jwt.verify(token, process.env.JWT_SECRET_KEY);
     const user = await findUserByToken(token);
+    res.locals.user = user;
     if (!user) return res.status(401).json({ status: 401, error: 'Votre clé d\'authentification à expiré, veuillez vous reconnecter', notification: 'Token expiré'});
   } catch (error: any) {
     return res.status(401).json({ status: 401, error: error, notification: 'Token erroné'});
   }
+  
   return next();
 };

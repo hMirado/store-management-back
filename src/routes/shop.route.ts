@@ -2,7 +2,7 @@ const shopRouter = require('express').Router();
 const shopController = require('../controllers/shop.controller');
 import { verifyToken } from "../middlewares/auth";
 
-shopRouter.get('/', verifyToken, shopController.getShops);
+shopRouter.get('/', shopController.getShops);
 shopRouter.get('/:uuid', verifyToken, shopController.getShopByUuid);
 shopRouter.post('/', verifyToken, shopController.createShop);
 shopRouter.put('/:uuid', verifyToken, shopController.updateShop);

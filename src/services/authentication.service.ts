@@ -8,9 +8,13 @@ export const login = async (user: typeof User, password: string) => {
   try {
     if (user && (await bcrypt.compare(password, user.password))) {
       const token = jwt.sign(
-        {user},
+        {
+          id: user.user_id,
+          uuid: user.user_uuid,
+        },
         process.env.JWT_SECRET_KEY,
         {
+          algorithm: "HS256",
           expiresIn: "12h"
         }
       )

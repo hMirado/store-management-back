@@ -67,7 +67,7 @@ export const john = async () => {
     "first_name": "John",
     "last_name": "DOE",
     "email": "john.doe@yopmail.com",
-    "phone_number": "0330000001",
+    "phone_number": "0331508856",
     "password": "1234567890",
     "fk_role_id": 2
   };
@@ -79,7 +79,19 @@ export const jane = async () => {
     "first_name": "Jane",
     "last_name": "DOE",
     "email": "Jane.doe@yopmail.com",
-    "phone_number": "0330000002",
+    "phone_number": "0341394234",
+    "password": "1234567890",
+    "fk_role_id": 2
+  };
+  return await createUser(first_name, last_name, email, phone_number, password, fk_role_id);
+};
+
+export const symon = async () => {
+  const {first_name, last_name, email, phone_number, password, fk_role_id} = {
+    "first_name": "Symon",
+    "last_name": "CASHLEY",
+    "email": "Jane.doe@yopmail.com",
+    "phone_number": "0331572422",
     "password": "1234567890",
     "fk_role_id": 2
   };

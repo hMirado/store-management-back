@@ -8,7 +8,7 @@ export const getCategories = async(req: Request) => {
       // @todo enlevé - 1 sur la page pour avoir la page précis
       const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
 
-      const { limit, offset } = getPagination(page, 10)
+      const { limit, offset } = getPagination(page, 5)
       const categories: typeof model.Category[] = await model.Category.findAndCountAll({
         include: model.Product,
         limit,
