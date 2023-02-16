@@ -3,9 +3,9 @@ const { Op } = require("sequelize");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 
-export const getProducts = async (req: Request, shopId: number = 0) => {
+export const getProducts = async (req: Request, categoryId: string = '') => {
   let conditions = {};
-  if (shopId != 0) conditions = {shop_id: shopId}
+  if (categoryId != '') conditions = {fk_category_id: categoryId}
   if (req.query.search && req.query.search != '') {
     conditions = {
       [ Op.or ]: [
@@ -24,7 +24,7 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
       const size = req.query.size ? req.query.size : 10;
       const { limit, offset } = getPagination(page, +size)
   
-      const products: typeof model.Product = await model.Product.findAll({
+      const products: typeof model.Product = await model.Product.findAndCountAll({
         include:[
           { model: model.Category},
           { model: model.Price }
@@ -32,20 +32,16 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
         where: conditions,
         offset,
         limit,
+        distinct: true,
         order: [
           ['label', 'ASC']
         ],
       });
-
       let formatedProducts: any[] = [];
-      //console.log(products);
-      
-      products.forEach((product: typeof model.Product, i: number) => {
+      products.rows.forEach((product: typeof model.Product, i: number) => {
         let lowPrice: number = 0;
         let highPrice: number = 0;
         const prices = product.prices
-        console.log(product);
-        
         prices.forEach((price: typeof model.Price, index: number) => {
           const ttcPrice =price.ttc_price;
           if (index == 0) {
@@ -74,9 +70,10 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
         formatedProducts.push(newProduct)
       });
       const result = {
-        count: products.length,
+        count: products.count,
         rows: formatedProducts
       }
+      
       return getPagingData(result, +page, 10);
     } else {
       return await model.Product.findAll(
@@ -89,11 +86,8 @@ export const getProducts = async (req: Request, shopId: number = 0) => {
         }
       );
     }
-
   } catch (error: any) {
-    console.log("error");
     console.log(error);
-    
     throw new Error(error);
   }
 }
