@@ -8,16 +8,14 @@ export const getCategories = async(req: Request) => {
       // @todo enlevé - 1 sur la page pour avoir la page précis
       const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
 
-      const { limit, offset } = getPagination(page, 5)
+      const { limit, offset } = getPagination(page, 10)
       const categories: typeof model.Category[] = await model.Category.findAndCountAll({
-        include: model.Product,
         limit,
         offset,
         order: [
           ['label', 'ASC']
         ],
       });
-
       return getPagingData(categories, page, 10);
     } else {
       return await model.Category.findAll({
@@ -33,6 +31,16 @@ export const getCategoryByCode = async (code: typeof model.Category ) => {
   try {
     return await model.Category.findOne({
       where: { code: code }
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const getCategoryByUuid = async (uuid: string) => {
+  try {
+    return await model.Category.findOne({
+      where: { category_uuid: uuid }
     });
   } catch (error) {
     throw error;
