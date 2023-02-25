@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const sequelize = require("./config/db.config.ts");
+const sequelize = require("./config/db.config");
 const companyRoutes = require("./routes/company.route");
 const shopRoutes = require("./routes/shop.route");
 const categoryRouter = require("./routes/category.route");
@@ -54,3 +54,5 @@ const port = process.env.PORT;
 app.listen(port, () => {
 	return console.log(`\n\nExpress is listening at http://localhost:${port}\n\n`);
 });
+
+// domains/planetgame.mg/public_html/store-management-api
