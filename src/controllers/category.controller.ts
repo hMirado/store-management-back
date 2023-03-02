@@ -17,6 +17,7 @@ module.exports.getCategories = async (req: Request, res: Response) => {
 				notification: "Listes des catégories de produits",
 			});
 	} catch (error) {
+    console.log("\nerror: ",error);
 		return res
 			.status(500)
 			.json({ error: error, notification: "Erreur système" });
