@@ -3,12 +3,11 @@ const { Op } = require("sequelize");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 
-export const getProducts = async (req: Request, categoryId: string = '') => {
-  let conditions = {};
-  if (categoryId != '') conditions = {fk_category_id: categoryId}
+export const getProducts = async (req: Request, categoryId: number = 0) => {
+  let conditions: any = {};
+  if (categoryId != 0) conditions['fk_category_id'] = categoryId
   if (req.query.search && req.query.search != '') {
-    conditions = {
-      [ Op.or ]: [
+    conditions[Op.or] = [
         {
           label: { [ Op.like ]: `%${req.query.search}%` }
         },
@@ -16,7 +15,6 @@ export const getProducts = async (req: Request, categoryId: string = '') => {
           code: { [ Op.like ]: `%${req.query.search}%` }
         }
       ]
-    }
   }
   try {
     if (req.query.paginate && req.query.paginate == '1') {
@@ -45,12 +43,12 @@ export const getProducts = async (req: Request, categoryId: string = '') => {
         prices.forEach((price: typeof model.Price, index: number) => {
           const ttcPrice =price.ttc_price;
           if (index == 0) {
-            lowPrice = ttcPrice;
-            highPrice = ttcPrice;
+            lowPrice = ttcPrice / 100;
+            highPrice = ttcPrice / 100;
           } else if (highPrice < ttcPrice && lowPrice < ttcPrice) {
-            highPrice = ttcPrice;
+            highPrice = ttcPrice / 100;
           } else if (highPrice > ttcPrice && lowPrice > ttcPrice) {
-            lowPrice = ttcPrice;
+            lowPrice = ttcPrice / 100;
           }
         })
         const newProduct = {

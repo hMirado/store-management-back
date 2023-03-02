@@ -9,10 +9,10 @@ import { getShopByUuid } from "../services/shop.service";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
-    let categoryId: string = ''
+    let categoryId: number = 0
     if (req.query.category) {
       const category: typeof model.Category = await getCategoryByUuid(req.query.category as string);
-      categoryId = category.category_id as string
+      categoryId = category.category_id
     }
     const products: any = await getProducts(req, categoryId);
 		return res.status(200).json({status: 200, data: products, notification: 'Listes des Articles'});
