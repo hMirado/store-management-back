@@ -3,6 +3,10 @@ import { AttributeType } from "../models/attribute-type.model";
 module.exports = () => {
   return AttributeType.bulkCreate([
     {
+      attribute_type_key: 'OTHER',
+      attribute_type_label: 'Autre'
+    },
+    {
       attribute_type_key: 'CAM',
       attribute_type_label: 'Caméra'
     },

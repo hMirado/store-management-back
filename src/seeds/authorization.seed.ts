@@ -2,6 +2,7 @@ import {Authorization} from "../models/authorization.model";
 
 module.exports = () => {
   return Authorization.bulkCreate([
+    // PAGE
     {
       authorization_name: "Catégorie d'artcile",
       authorization_key: "PAGE_ITEM_CATEGORY"
@@ -26,6 +27,11 @@ module.exports = () => {
       authorization_name: "Rôle",
       authorization_key: "PAGE_ROLE"
     },
+    {
+      authorization_name: "Boutique",
+      authorization_key: "PAGE_SHOP"
+    },
+
     // CATEGORY
     {
       authorization_name: "Importer les catégories d'articles",
@@ -70,13 +76,18 @@ module.exports = () => {
     },
     // STOCK
     {
-      authorization_name: "Entrée de stock",
-      authorization_key: 'PAGE_ELEMENT_STOCK_RECEIPT',
+      authorization_name: "Ajout de stock",
+      authorization_key: 'PAGE_ELEMENT_STOCK_ADD',
       authorization_parent: 3
     },
     {
-      authorization_name: "Sortie de stock",
-      authorization_key: 'PAGE_ELEMENT_STOCK_REMOVAL',
+      authorization_name: "Import de stock",
+      authorization_key: 'PAGE_ELEMENT_STOCK_IMPORT',
+      authorization_parent: 3
+    },
+    {
+      authorization_name: "Transfert de stock",
+      authorization_key: 'PAGE_ELEMENT_STOCK_TRANSFER',
       authorization_parent: 3
     },
     // USER
@@ -120,6 +131,12 @@ module.exports = () => {
       authorization_name: "Désactiver un role",
       authorization_key: 'PAGE_ELEMENT_DISABLE_ROLE',
       authorization_parent: 6
+    },
+    // SHOP
+    {
+      authorization_name: "Créer ou modfier un shop",
+      authorization_key: 'PAGE_ELEMENT_CREATE_SHOP',
+      authorization_parent: 7
     },
   ]).then(() => console.log('Seed Authorization complete'))
 };

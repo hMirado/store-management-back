@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 const sequelize = require("../config/db.config");
 
-const Shop = sequelize.define("shop", {
+export const Shop = sequelize.define("shop", {
 	shop_id: {
 		type: Sequelize.INTEGER,
 		autoIncrement: true,
@@ -12,6 +12,10 @@ const Shop = sequelize.define("shop", {
 		type: Sequelize.UUID,
 		defaultValue: Sequelize.UUIDV4,
 		allowNull: false,
+	},
+	shop_code: {
+		type: Sequelize.STRING,
+		allowNull: true,
 	},
 	shop_name: {
 		type: Sequelize.STRING,
@@ -37,8 +41,6 @@ const Shop = sequelize.define("shop", {
 	createdAt: Sequelize.DATE,
 	updatedAt: Sequelize.DATE,
 });
-
-module.exports = Shop;
 
 // export class ShopModel extends Sequelize.Model {
 // 	id!: number;

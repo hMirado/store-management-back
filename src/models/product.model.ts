@@ -1,7 +1,7 @@
 import Sequelize, { BOOLEAN } from "sequelize";
 const sequelize = require("../config/db.config");
 
-const Product = sequelize.define("product", {
+export const Product = sequelize.define("product", {
   product_id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
@@ -30,5 +30,3 @@ const Product = sequelize.define("product", {
     defaultValue: false
   }
 });
-
-module.exports = Product;

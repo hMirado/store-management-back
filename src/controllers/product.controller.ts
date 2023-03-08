@@ -3,13 +3,18 @@ const XLSX = require('xlsx');
 const model = require("../models/index");
 import { toLowerKeys } from "../helpers/format";
 import { Request, Response } from "express";
-import { getCategories, getCategoryById } from "../services/category.service";
+import { getCategories, getCategoryById, getCategoryByUuid } from "../services/category.service";
 import { createProduct, getProducts, getProductByCode } from "../services/product.service";
 import { getShopByUuid } from "../services/shop.service";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
-    const products: any = await getProducts(req);
+    let categoryId: number = 0
+    if (req.query.category) {
+      const category: typeof model.Category = await getCategoryByUuid(req.query.category as string);
+      categoryId = category.category_id
+    }
+    const products: any = await getProducts(req, categoryId);
 		return res.status(200).json({status: 200, data: products, notification: 'Listes des Articles'});
   } catch (error) {
 		return res.status(500).json({ error: error, notification: 'Erreur système'});

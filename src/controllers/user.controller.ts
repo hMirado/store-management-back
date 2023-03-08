@@ -18,7 +18,7 @@ export const createUserHandler = async (req: IGetUserAuthInfoRequest, res: Respo
     if (oldUser)
       return res.status(409).send("L'utilisateur existe déjà. Veuillez vous connecter");
 
-    const user: typeof User = await createUser(first_name, last_name, email, phone_number, password, req.body.shop, req.body.role);
+    const user: typeof User = await createUser(first_name, last_name, email, phone_number, password, req.body.role);
     return res.status(201).json({status: 201, data: user, notification: 'Utilisateur créer avec succès'});
   } catch (error: any) {
     console.log(error);

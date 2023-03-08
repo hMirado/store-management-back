@@ -15,6 +15,7 @@ import { getProductByUuid, getProductById } from "../services/product.service";
 import { createMultipleSerialization } from '../services/serialization.service';
 import { createMultipleAttribute } from '../services/attribute.service';
 import { createPrice } from '../services/price.service';
+import { ADMIN } from "../config/constants";
 const sequelize = require("../config/db.config");
 const model = require("../models/index");
 
@@ -30,8 +31,12 @@ module.exports.addStock = async (req: Request, res: Response) => {
 }
 
 export const getProductsInStockHandler = async (req: Request, res: Response) => {
-  const shopUuid: string|null = req.query.shop ? req.query.shop as string : null
+  let shopUuid: string|null = req.query.shop ? req.query.shop as string : null
   try {
+    const tokenData = res.locals.user
+    if (tokenData.role.role_key != ADMIN) {
+      shopUuid = tokenData.shops[0].shop_uuid
+    }
     if (shopUuid) {
       const shop = await getShopByUuid(shopUuid);
       if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
@@ -164,7 +169,7 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
 }
 
 export const countStock = async (req: Request, res: Response) => {
-  const shopUuid: string|null = req.query.shop ? req.query.shop as string : null;
+  let shopUuid: string|null = req.query.shop ? req.query.shop as string : null;
   let shopId: number|null = null;
   try {
     
@@ -172,6 +177,11 @@ export const countStock = async (req: Request, res: Response) => {
       const shop: typeof model.Shop = await getShopByUuid(shopUuid);
       if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
       shopId = shop.shop_id;
+    }
+
+    const tokenData = res.locals.user
+    if (tokenData.role.role_key != ADMIN) {
+      shopId = tokenData.shops[0].shop_id
     }
 
     const inStock = await countProductInStock(shopId);

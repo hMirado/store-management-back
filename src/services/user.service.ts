@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const model = require("../models/index");
 const { Op } = require("sequelize");
 
-export const createUser = async (first_name: string, last_name: string, email: string, phone_number: string, password: string, fk_shop_id: number, fk_role_id: number) => {
+export const createUser = async (first_name: string, last_name: string, email: string, phone_number: string, password: string, fk_role_id: number) => {
   try {
     const encryptedPassword = await bcrypt.hash(password, 10);
     const user: typeof User = {
@@ -12,7 +12,6 @@ export const createUser = async (first_name: string, last_name: string, email: s
       email: email.toLowerCase(),
       password: encryptedPassword,
       phone_number: phone_number,
-      fk_shop_id,
       fk_role_id
     };
     return await User.create(user);
