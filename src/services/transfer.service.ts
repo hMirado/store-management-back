@@ -192,7 +192,7 @@ export const getTransferByUuidByShop = async (uuid: string, shopId: number, inPr
 const transferProductWithSerialization = async (uuid: string, shopId: number, inProgress: boolean) => {
   return await model.Transfer.findOne(
     {
-      attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
+      attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "transfer_commentary", "createdAt", "updatedAt" ],
       include: [
         {
           model: model.Product,
@@ -249,7 +249,7 @@ const transferProductWithSerialization = async (uuid: string, shopId: number, in
 const transferProductWithOutSerialization = async (uuid: string, shopId: number, inProgress: boolean) => {
   return await model.Transfer.findOne(
     {
-      attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
+      attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "transfer_commentary", "createdAt", "updatedAt" ],
       include: [
         {
           model: model.Product

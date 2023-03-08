@@ -17,5 +17,9 @@ export const Transfer = sequelize.define('transfer', {
   transfer_quantity: {
     type: Sequelize.INTEGER,
     allowNull: false,
+  },
+  transfer_commentary: {
+    type: Sequelize.TEXT('long'),
+    allowNull: true,
   }
 })
