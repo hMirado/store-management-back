@@ -20,6 +20,7 @@ export const createTransferHandler = async (req: Request, res: Response) => {
   const productUuid: string = req.body.product;
   const transferQuantity: number = req.body.quantity;
   const transferSerializations: [] = req.body.serialization;
+  const commentary: string = req.body.commentary;
   try {
     const shopSender: typeof model.Shop = await getShopByUuid(shopSenderUuid);
     const shopReceiver: typeof model.Shop = await getShopByUuid(shopReceiverUuid);
@@ -47,6 +48,7 @@ export const createTransferHandler = async (req: Request, res: Response) => {
 
     const transferValue = {
       transfer_quantity: transferQuantity,
+      transfer_commentary: commentary,
       fk_product_id: product.product_id,
       fk_transfer_type_id: 2,
       fk_transfer_status_id: transferStatus.transfer_status_id,
@@ -175,8 +177,6 @@ export const getTransferByUuidByShopHandler = async (req: Request, res: Response
   const shopUuid: string = req.params.shop;
   const transferUuid: string = req.params.transfer;
   const inProgress: string = req.query.in_progress as string;
-  console.log( Boolean(inProgress));
-  
   try {
     const shop: typeof model.Shop = await getShopByUuid(shopUuid);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop est inexistant.'});
