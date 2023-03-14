@@ -17,5 +17,10 @@ export const UserShop = sequelize.define('user_shop', {
       model: Shop,
       key: 'shop_id'
     }
+  },
+  is_current_shop: {
+    type: Sequelize.BOOLEAN,
+    defaultValue: true,
+    allowNull: false
   }
 })

@@ -1,4 +1,5 @@
-import { RequestHandler, Request, Response } from "express";
+import { Request, Response } from "express";
+import { getShopByStatus } from "../services/shop.service";
 const model = require("../models/index");
 
 /**
@@ -130,6 +131,16 @@ module.exports.deleteShop =async (req: Request, res: Response) => {
 
 		const deleteShop: typeof model.Shop = await model.Shop.destroy({where: { shop_uuid: uuid }});
 		return res.status(200).json({status: 200, data: deleteShop, notification: 'Boutique supprimée'});
+	} catch (error) {
+		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système'});
+	}
+}
+
+export const getShopByStatusHandler =async (req: Request, res: Response) => {
+	const status = req.query.status as string
+	try {
+		const shop: typeof model.Shop = await getShopByStatus(Boolean(status))
+		return res.status(200).json({ status: 200, data: shop, notification: 'Liste des boutiques.'});
 	} catch (error) {
 		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système'});
 	}

@@ -19,3 +19,13 @@ export const getShopById = async (id: number) => {
     throw error;
   }
 }
+
+export const getShopByStatus = async (status: boolean) => {
+  try {
+    return await model.Shop.findOne({
+      where: {status: status}
+    })
+  } catch (error: any) {
+    throw new Error(error);
+  }
+}
