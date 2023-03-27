@@ -2,35 +2,45 @@ import { Response, Request } from "express";
 import { IGetUserAuthInfoRequest } from "../modules/my-request";
 import { 
   createUser, 
-  findUserByEmailOrPhoneNumber, 
   findUserByUuid, 
   findUserById,
   addUserShop,
   updateUserShop,
-  deleteUserShop
+  deleteUserShop,
+  findUserByEmail,
+  findUserByPhone
 } from "../services/user.service";
 import { User } from "../models/user.model";
 import { Shop } from "../models/shop.model";
-import { verifyAuthorization } from "../helpers/verify-authorization";
+import { generateId } from "../helpers/helper";
 import { authorization } from "../config/constants";
 import { getShopById } from "../services/shop.service";
 import { UserShop } from "models/user-shop.model";
 
 export const createUserHandler = async (req: IGetUserAuthInfoRequest, res: Response) => {
-  const { first_name, last_name, email, phone_number, password } = req.body;
+  const { first_name, last_name, email, phone_number, fk_role_id } = req.body;
+  const password: string = generateId();
   try {
     // const isAuthorized = verifyAuthorization(req.user.role.authorizations, authorization.PAGE_ELEMENT_ADD_NEW_USER);
     // if (!isAuthorized) return res.status(403).json({ status: 403, error: 'Accès réfusé.', notification: "Vous n'êtes pas autorisé à effectuer cete action."});
 
-    if (!(email && password && first_name && last_name))
+    if (!(fk_role_id && first_name && last_name && phone_number))
       res.status(400).send({status: 404, notification: 'Tous les champs sont requises.'});
 
-    const oldUser: typeof User = await findUserByEmailOrPhoneNumber(req.body.email);
-    if (oldUser)
-      return res.status(409).send("L'utilisateur existe déjà. Veuillez vous connecter");
+    if (email) {      
+      const userByEmail: typeof User = await findUserByEmail(email);
+      if (userByEmail) return res.status(409).send("L'email est déjà utilisé.");
+    }
 
-    const user: typeof User = await createUser(first_name, last_name, email, phone_number, password, req.body.role);
-    return res.status(201).json({status: 201, data: user, notification: 'Utilisateur créé.'});
+    const userByPhone: typeof User = await findUserByPhone(phone_number);
+    if (userByPhone) return res.status(409).send("Numéro télephone est déjà utilisé.");
+
+    const userCreated: typeof User = await createUser(first_name, last_name, email||null, phone_number, password, fk_role_id);
+    if (userCreated.user_uuid) {
+      const user: typeof User = await findUserByUuid(userCreated.user_uuid);
+      user['password'] = password
+      return res.status(201).json({status: 201, data: user, notification: 'Utilisateur créé.'});
+    }
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ body: error, notification: "Erreur système" })

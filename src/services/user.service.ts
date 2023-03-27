@@ -10,7 +10,7 @@ export const createUser = async (first_name: string, last_name: string, email: s
     const user: typeof User = {
       first_name,
       last_name,
-      email: email.toLowerCase(),
+      email: email,
       password: encryptedPassword,
       phone_number: phone_number,
       fk_role_id
@@ -47,6 +47,54 @@ export const findUserByEmailOrPhoneNumber = async (value: string) => {
     throw error
   }
 };
+
+export const findUserByEmail =async (email: string) => {
+  try {
+    return await User.findOne({
+      attributes: { exclude: ['token', 'password'] },
+      include: [
+        { 
+          model: model.Shop
+        },
+        {
+          model: model.Role,
+          include: {
+            model: model.Authorization
+          }
+        }
+      ],
+      where: {
+        email: email
+      }
+    })
+  } catch (error: any) {
+    throw error
+  }
+}
+
+export const findUserByPhone =async (phone: string) => {
+  try {
+    return await User.findOne({
+      attributes: { exclude: ['token', 'password'] },
+      include: [
+        { 
+          model: model.Shop
+        },
+        {
+          model: model.Role,
+          include: {
+            model: model.Authorization
+          }
+        }
+      ],
+      where: {
+        phone_number: phone
+      }
+    })
+  } catch (error: any) {
+    throw error
+  }
+}
 
 export const findUserByUuid = async (uuid: string) => {
   try {
