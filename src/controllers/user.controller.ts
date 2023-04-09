@@ -178,7 +178,7 @@ export const resetPasswordHandller = async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({ status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistant.'});
     const response = await resetPassword(uuid);
     return res.status(201).json({status: 201, data: response, notification: 'Mots de passe reinitialiser.'});
-  } catch (error) {
-    
+  } catch (error: any) {
+    return res.status(500).json({ body: error, notification: "Erreur système" })
   }
 }

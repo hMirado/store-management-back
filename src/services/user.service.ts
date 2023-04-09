@@ -369,8 +369,6 @@ export const resetPassword = async (userUuid: string) => {
   const newPassword: string = generateId();
   const encryptedPassword = await bcrypt.hash(newPassword, 10);
   try {
-    console.log("\n password >> ", newPassword);
-    
     const isReseted =  await User.update(
       {
         password: encryptedPassword,

@@ -1,17 +1,40 @@
 import { Role } from "../models/role.model";
 import { Authorization } from "../models/authorization.model";
 import { Request } from "express";
+import { getPagination, getPagingData } from "../helpers/pagination";
+const { Op } = require("sequelize");
 
 export const getRoles = async (req: Request) => {
+  const query = req.query
+  let condition: any = {};
+  if (query.search != '') condition['role_name'] = { [Op.like]: `%${query.search}%` };
   try {
-    if (req.query.paginate && req.query.paginate == '1') {
+    if (query.paginate && query.paginate == '1') {
+      const page = (query.page && +query.page > 1) ? +query.page - 1 : 0;
+      const size = req.query.size ? req.query.size : 10;
+      const { limit, offset } = getPagination(page, +size);
 
+      const roles: typeof Role[] = await Role.findAndCountAll({
+        include: Authorization,
+        required: false,
+        where: condition,
+        offset,
+        limit,
+        distinct: true,
+        order: [
+          ['role_name', 'ASC']
+        ],
+      });
+
+      return getPagingData(roles, page, 10);
     } else {
       return await Role.findAll({
         include: Authorization
       })
     }
   } catch (error: any) {
+    console.log("\n role.service::getRoles");
+    console.log(error);
     throw new Error(error);
   }
 }
@@ -19,9 +42,7 @@ export const getRoles = async (req: Request) => {
 export const getRoleByUuid = async (uuid: string) => {
   try {
     const role: typeof Role = await Role.findOne({
-      include: {
-        model: Authorization,
-      },
+      include: Authorization,
       where: { role_uuid: uuid }
     });
 
@@ -84,6 +105,8 @@ export const getRoleById = async (id: number) => {
       where: { role_id: id }
     });
   } catch (error: any) {
+    console.log("\n role.service::getRoleById");
+    console.log(error);
     throw new Error(error);
   }
 }
