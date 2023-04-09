@@ -3,9 +3,9 @@ const { Op } = require("sequelize");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 
-export const getProducts = async (req: Request, categoryId: number = 0) => {
+export const getProducts = async (req: Request, categoryId: string = '') => {
   let conditions: any = {};
-  if (categoryId != 0) conditions['fk_category_id'] = categoryId
+  if (categoryId != '') conditions['fk_category_id'] = +categoryId
   if (req.query.search && req.query.search != '') {
     conditions[Op.or] = [
         {

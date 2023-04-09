@@ -24,5 +24,8 @@ export const AttributeType = sequelize.define("attributeType",
       allowNull: false,
       unique: 'compositeIndex'
     }
-  }
+  },
+	{
+		paranoid: true,
+	}
 );

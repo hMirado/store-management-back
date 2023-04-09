@@ -9,7 +9,7 @@ import { getShopByUuid } from "../services/shop.service";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
-    let categoryId: number = 0
+    let categoryId: string = ''
     if (req.query.category) {
       const category: typeof model.Category = await getCategoryByUuid(req.query.category as string);
       categoryId = category.category_id
