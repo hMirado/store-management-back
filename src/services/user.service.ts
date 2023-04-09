@@ -6,9 +6,8 @@ const { Op } = require("sequelize");
 import { Request } from "express";
 import { getPagination, getPagingData } from '../helpers/pagination';
 import { QueryTypes } from 'sequelize';
-import { Role } from 'models/role.model';
 const sequelize = require("../config/db.config");
-import { getRoleById } from "./role.service";
+import { generateId } from '../helpers/helper';
 
 export const createUser = async (first_name: string, last_name: string, email: string, phone_number: string, password: string, fk_role_id: number) => {
   try {
@@ -348,19 +347,44 @@ export const countUser = async () => {
 
 export const updateUser = async (req: Request) => {
   const user = req.body;
-  const user_uuid = req.body.user_uuid;
+  const userUuid = req.body.user_uuid;
   try {
     delete user.user_uuid;
     return await User.update(
       user,
       {
         where: {
-          user_uuid: user_uuid
+          user_uuid: userUuid
         }
       }
     );
   } catch (error: any) {
     console.log("\n user.service::updateUser");
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export const resetPassword = async (userUuid: string) => {
+  const newPassword: string = generateId();
+  const encryptedPassword = await bcrypt.hash(newPassword, 10);
+  try {
+    console.log("\n password >> ", newPassword);
+    
+    const isReseted =  await User.update(
+      {
+        password: encryptedPassword,
+        token: null
+      },
+      {
+        where: {
+          user_uuid: userUuid
+        }
+      }
+    )
+    return { newPassword: newPassword, isReseted: isReseted[0] };
+  } catch (error: any) {
+    console.log("\n user.service::resetPassword");
     console.log(error);
     throw new Error(error);
   }

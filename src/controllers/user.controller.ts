@@ -11,16 +11,17 @@ import {
   findAllUser,
   countUser,
   updateUser,
-  queryFindUserWithShop
+  queryFindUserWithShop,
+  resetPassword
 } from "../services/user.service";
 import { User } from "../models/user.model";
 import { Shop } from "../models/shop.model";
 import { Role } from "../models/role.model";
 import { generateId } from "../helpers/helper";
-import { authorization } from "../config/constants";
 import { getShopById, getShopByUuid } from "../services/shop.service";
 import { UserShop } from "models/user-shop.model";
 import { getRoleByUuid } from "../services/role.service";
+const jwt = require("jsonwebtoken");
 
 export const createUserHandler = async (req: IGetUserAuthInfoRequest, res: Response) => {
   const { first_name, last_name, email, phone_number, fk_role_id } = req.body;
@@ -95,7 +96,7 @@ export const addUserShopHandler = async (req: Request, res: Response) => {
       values.push({user_id: userId, shop_id: id});
     }
     const userShop: typeof UserShop = await addUserShop(values);
-    return res.status(201).json({status: 201, data: userShop, notification: 'Boutique ajouté à l\'utilisateur'});
+    return res.status(201).json({status: 201, data: userShop, notification: 'Utilisateur rattaché à un shop.'});
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ body: error, notification: "Erreur système" })
@@ -118,7 +119,7 @@ export const updateUserShopHandler = async (req: Request, res: Response) => {
       values.push({user_id: userId, shop_id: id, is_current_shop: true});
     }
     const userShop: typeof UserShop = await addUserShop(values);
-    return res.status(201).json({status: 201, data: userShop, notification: 'Shop rattaché(s) à l\'utilisateur.'});
+    return res.status(201).json({status: 201, data: userShop, notification: 'Shop de l\'utilisateur mise à jour.'});
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ body: error, notification: "Erreur système" });
@@ -152,7 +153,7 @@ export const findAllUserHander = async (req: Request, res: Response) => {
 export const countUserHandler = async (req: Request, res: Response) => {
   try {
     const count: number = await countUser();
-    return res.status(200).json({status: 200, data: count, notification: 'Nombre total d\'utilisateur'});
+    return res.status(200).json({status: 200, data: count, notification: 'Nombre total d\'utilisateur.'});
   } catch (error: any) {
     return res.status(500).json({ body: error, notification: "Erreur système" })
   }
@@ -163,8 +164,21 @@ export const updateUserHandler = async (req: Request, res: Response) => {
     const user = await findUserByUuid(req.body.user_uuid);
     if (!user) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Utilisateur inexistante.'});
     const updateIsSuccess = await updateUser(req);
-    return res.status(201).json({status: 201, data: updateIsSuccess, notification: 'Utilisateur mise à jour avec succés'});
+    return res.status(201).json({status: 201, data: updateIsSuccess, notification: 'Utilisateur mise à jour avec succés.'});
   } catch (error: any) {
     return res.status(500).json({ body: error, notification: "Erreur système" })
+  }
+}
+
+export const resetPasswordHandller = async (req: Request, res: Response) => {
+  const uuid: string = req.params.uuid;
+  try {
+    if (!uuid) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistante.'});
+    const user: typeof User = await findUserByUuid(uuid);
+    if (!user) return res.status(404).json({ status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistant.'});
+    const response = await resetPassword(uuid);
+    return res.status(201).json({status: 201, data: response, notification: 'Mots de passe reinitialiser.'});
+  } catch (error) {
+    
   }
 }
