@@ -24,9 +24,6 @@ const Stock = sequelize.define(
 		//     type: Sequelize.UUID,
 		//     allowNull: false,
 		// }
-	},
-	{
-		paranoid: true,
 	}
 );
 
