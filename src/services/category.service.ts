@@ -34,45 +34,69 @@ export const getCategories = async(req: Request) => {
         where: condition
       });
     }
-  } catch (error) {
-    console.log("\nerror: ",error);
-    throw error;
+  } catch (error: any) {
+    console.log("\n category.service::getCategories");
+    console.log(error);
+    throw new Error(error);
   }
 }
 
 export const getCategoryByCode = async (code: typeof model.Category ) => {
   try {
     return await model.Category.findOne({
+      include: model.Product,
       where: { code: code }
     });
-  } catch (error) {
-    throw error;
+  } catch (error: any) {
+    console.log("\n category.service::getCategoryByCode");
+    console.log(error);
+    throw new Error(error);
   }
 }
 
 export const getCategoryByUuid = async (uuid: string) => {
   try {
-    return await model.Category.findOne({
+    const category: typeof model.Category = await model.Category.findOne({
+      include: model.Product,
       where: { category_uuid: uuid }
     });
-  } catch (error) {
-    throw error;
+    return formatCategory(category);
+  } catch (error: any) {
+    console.log("\n category.service::getCategoryByUuid");
+    console.log(error);
+    throw new Error(error);
   }
 }
 
 export const getCategoryById = async (id: string) => {
   try {
-    return await model.Category.findOne({
+    const category: typeof model.Category = await model.Category.findOne({
+      include: model.Product,
       where: { category_id: id }
     });
-  } catch (error) {
-    throw error;
+    return formatCategory(category);
+  } catch (error: any) {
+    console.log("\n category.service::getCategoryById");
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export const formatCategory = (category: typeof model.Category) => {
+  return {
+    category_id: category.category_id,
+    category_uuid: category.category_uuid,
+    code: category.code,
+    label: category.label,
+    products: category.products,
+    product_count: category.products.length
   }
 }
 
 export const syncGetCategoryById = (id: string) => {
   try {
     return model.Category.findOne({
+      include: model.Product,
       where: { category_id: id }
     });
   } catch (error) {
@@ -88,7 +112,23 @@ export const createCategory = async (categories: typeof model.Category[]) => {
         updateOnDuplicate: ["code", "label"]
       }
     )
-  } catch (error) {
-    throw error;
+  } catch (error: any) {
+    console.log("\n category.service::createCategory");
+    console.log(error);
+    throw new Error(error);
+  }
+}
+export const updateCategory = async (uuid: string, value: typeof model.Category) => {
+  try {
+    return await model.Category.update(
+      value,
+      {
+        where: { category_uuid: uuid }
+      }
+    )
+  } catch (error: any) {
+    console.log("\n category.service::updateCategory");
+    console.log(error);
+    throw new Error(error);
   }
 }
