@@ -4,7 +4,17 @@ const model = require("../models/index");
 import { toLowerKeys } from "../helpers/format";
 import { Request, Response } from "express";
 import { getCategories, getCategoryById, getCategoryByUuid } from "../services/category.service";
-import { createProduct, getProducts, getProductByCode } from "../services/product.service";
+import { 
+  createProduct, 
+  getProducts, 
+  getProductByCode, 
+  getProductByDetail,
+  createProductWithPrice,
+  getProductByLabelOrCode,
+  updateProduct,
+  getProductByUuid,
+  getProductByLabel
+} from "../services/product.service";
 import { getShopByUuid } from "../services/shop.service";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
@@ -31,6 +41,70 @@ export const countProductHandler = async (req: Request, res: Response) => {
 			.json({ error: error, notification: "Erreur système" });
   }
 };
+
+export const getProductByCodeHandler = async (req: Request, res: Response) => {
+  try {
+    const results = await getProductByCode(req.params.code);
+		return res.status(200).json({status: 200, data: results, notification: 'Détail de l\'article'});
+  } catch (error: any) {
+    console.error('\nproduct.controller::getProductByCodeHandler', error);
+		return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getProductByLabelHandler = async (req: Request, res: Response) => {
+  try {
+    const results = await getProductByLabel(req.params.label);
+		return res.status(200).json({status: 200, data: results, notification: 'Détail de l\'article'});
+  } catch (error: any) {
+    console.error('\nproduct.controller::getProductByCodeHandler', error);
+		return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+};
+
+export const getProductByDetailHandler = async (req: Request, res: Response) => {
+  try {
+    const results = await getProductByDetail(req.params.uuid);
+		return res.status(200).json({status: 200, data: results, notification: 'Détail de l\'article'});
+  } catch (error: any) {
+    console.error('\nproduct.controller::getProductByDetailHandler', error);
+		return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getSaleProductsHandler = async (req: Request, res: Response) => {
+  try {
+    const shop: typeof model.Shop = await getShopByUuid(req.params.shopUuid)
+    if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'La boutique indiquée est inexistante.'});
+
+    const products: typeof model.Product = await getProducts(req, shop.shopId);
+    const categories: typeof model.Category = await getCategories(req);
+    return res.status(200).json({status: 200, data: {categories, products}, notification: 'Liste des produits et des catégories'});
+  } catch (error: any) {
+    console.error('product.controller::getSaleProductsHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+};
+
+export const getProductByLabelOrCodeHandler = async (req: Request, res: Response) => {
+  try {
+    const product: typeof model.Product = await getProductByLabelOrCode(req.query.search as string);
+    return res.status(200).json({status: 200, data: {isExist: product ? true : false}, notification: 'Details de l\'article'});
+  } catch (error: any) {
+    console.error('product.controller::getProductByLabelOrCodeHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getProductByUuidHandler = async (req: Request, res: Response) => {
+  try {
+    const product = await getProductByUuid(req.params.uuid as string);
+    return res.status(200).json({status: 200, data: product, notification: 'Details de l\'article'});
+  } catch (error: any) {
+    console.error('product.controller::getProductByLabelOrCodeHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
 
 export const createProductHandler = async (req: Request, res: Response) => {
   const products: typeof model.Product[] = req.body;
@@ -68,24 +142,25 @@ export const createProductHandler = async (req: Request, res: Response) => {
   }
 };
 
-export const getProductByCodeHandler = async (req: Request, res: Response) => {
+export const createProductWithPriceHandler = async (req: Request, res: Response) => {
   try {
-    const results = await getProductByCode(req.params.code);
-		return res.status(200).json({status: 200, data: results, notification: 'Détail de l\'article'});
-  } catch (error) {
-		return res.status(500).json({ error: error, notification: 'Erreur système'});
-  }
-};
-
-export const getSaleProductsHandler = async (req: Request, res: Response) => {
-  try {
-    const shop: typeof model.Shop = await getShopByUuid(req.params.shopUuid)
-    if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'La boutique indiquée est inexistante.'});
-
-    const products: typeof model.Product = await getProducts(req, shop.shopId);
-    const categories: typeof model.Category = await getCategories(req);
-    return res.status(200).json({status: 200, data: {categories, products}, notification: 'Liste des produits et des catégories'});
-  } catch (error) {
+    const isCreated = await createProductWithPrice(req.body);
+    return res.status(201).json({status: 201, data: isCreated, notification: 'Articel crée'});
+  } catch (error: any) {
+    console.error('product.controller::createProductWithPriceHandler', error);
     return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
-};
+}
+
+export const updateProductHandler = async (req: Request, res: Response) => {
+  try {
+    const product = await getProductByUuid(req.body.product_uuid);
+    if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
+    if (req.body.code == '' || req.body.label == '') return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Veuillez renseigner tous les champs.'});
+    const update = await updateProduct(req.body);
+    return res.status(201).json({status: 201, data: update, notification: 'L`\article a été modifié avec succès.'});
+  } catch (error: any) {
+    console.error('product.controller::getProductByLabelOrCodeHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
