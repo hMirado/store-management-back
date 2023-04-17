@@ -290,8 +290,6 @@ export const createProductWithPrice = async (products: []) => {
 }
 
 export const updateProduct = async (value: typeof model.Product) => {
-  console.log(value);
-  
   const productUuid = value.product_uuid;
   const newValue = {
     code: value.code,
