@@ -2,6 +2,7 @@ import {AuthorizationRole} from "../models/authorization-role.model";
 
 module.exports = () => {
   return AuthorizationRole.bulkCreate([
+    // ADMIN - ALL ACCESS
     { role_id: 1, authorization_id: 1 },
     { role_id: 1, authorization_id: 2 },
     { role_id: 1, authorization_id: 3 },
@@ -25,6 +26,13 @@ module.exports = () => {
     { role_id: 1, authorization_id: 21 },
     { role_id: 1, authorization_id: 22 },
     { role_id: 1, authorization_id: 23 },
-    { role_id: 1, authorization_id: 24 }
+    { role_id: 1, authorization_id: 24 },
+
+    // SELLER
+    { role_id: 2, authorization_id: 1 },
+    { role_id: 2, authorization_id: 2 },
+    { role_id: 2, authorization_id: 3 },
+    { role_id: 2, authorization_id: 4 },
+    { role_id: 2, authorization_id: 16 },
   ]).then(() => console.log('Seed Authorization - Role completed.'))
 };

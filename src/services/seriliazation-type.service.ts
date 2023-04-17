@@ -17,3 +17,13 @@ export const getSerializationTypeByCode = async (code: string) => {
     throw error;
   }
 };
+
+export const getSerializationTypeById = async (id: number) => {
+  try {
+    return await model.SerializationType.findOne({
+      where: { serialization_type_id: id }
+    });
+  } catch (error) {
+    throw error;
+  }
+};

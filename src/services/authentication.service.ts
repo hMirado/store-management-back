@@ -8,10 +8,14 @@ export const login = async (user: typeof User, password: string) => {
   try {
     if (user && (await bcrypt.compare(password, user.password))) {
       const token = jwt.sign(
-        {user},
+        {
+          id: user.user_id,
+          uuid: user.user_uuid,
+        },
         process.env.JWT_SECRET_KEY,
         {
-          expiresIn: "10h"
+          algorithm: "HS256",
+          expiresIn: "12h"
         }
       )
 
@@ -23,7 +27,6 @@ export const login = async (user: typeof User, password: string) => {
           where: { user_id: user.user_id}
         }
       )
-
       if (userTokenSaved) return token;
     }
   } catch (error: any) {

@@ -1,13 +1,17 @@
 const CategorySeed = require('./category');
 const ProductSeed = require('./product');
-const createStockMovmentTypeSeed = require('./serialization-type.seed');
-const createSerializationTypeSeed = require('./stock-movment-type.seed');
+const createSerializationTypeSeed= require('./serialization-type.seed');
+const createStockMovmentTypeSeed = require('./stock-movment-type.seed');
 const CompanySeed = require('./company');
 const ShopSeed = require('./shop');
 const authorizationSeed = require('./authorization.seed');
 const roleSeed = require('./role.seed');
 const authorizationRoleAdminSeed = require('./authorization-role-admin.seed');
 const userSeed = require('./user.seed');
+const attributeTypeSeed = require('./attribute-type.seed');
+const transferStatusSeed = require('./transfer-status.seed');
+const transferTypeSeed = require('./transfer-type.seed');
+const userShopSeed = require('./user-shop.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -16,14 +20,22 @@ module.exports = () => {
     createStockMovmentTypeSeed(),
     createSerializationTypeSeed(),
     authorizationSeed(),
-    roleSeed()
+    roleSeed(),
+    attributeTypeSeed(),
+    transferStatusSeed(),
+    transferTypeSeed(),
+    userSeed.mirado(),
+    userSeed.jenny(),
+    userSeed.jane(),
+    userSeed.john(),
   ]).then(() => {
     [
       ShopSeed(),
-      //ProductSeed(),
-      authorizationRoleAdminSeed(),
-      userSeed()
+      ProductSeed(),
+      authorizationRoleAdminSeed()
     ];
+  }).then(() => {
+    userShopSeed()
   }).then(() => {
     console.log('\nSeed completed.\n')
   })

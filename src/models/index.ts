@@ -1,9 +1,9 @@
 const Category = require('./category.model');
-const Product = require('./product.model');
-const Attribute = require('./attribute.model');
+import { Product } from './product.model';
+import { Attribute } from './attribute.model';
 const Company = require('./company.model');
-const Shop = require('./shop.model');
 const Stock = require('./stock.model');
+import { Shop } from './shop.model';
 import { StockMovment } from './stock-movment.model';
 import { StockMovmentType } from './stock-movment-type.model';
 import { Serialization } from './serialization.model';
@@ -12,6 +12,12 @@ import { User } from './user.model';
 import { Role } from './role.model';
 import { Authorization } from './authorization.model';
 import { AuthorizationRole } from './authorization-role.model';
+import { AttributeType } from './attribute-type.model';
+import { Price } from './price.model';
+import { TransferStatus } from "./transfer-status.model";
+import { Transfer } from "./transfer.model";
+import { TransferType } from './transfer-type.model';
+import { UserShop } from './user-shop.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -77,6 +83,13 @@ Product.belongsTo(Category, {
  * @summary: PRODUCT & ATTRIBUTE
  * @description: Relation between Product and Attribute
  */
+Attribute.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id",
+});
 Product.hasMany(Attribute, 
   {
     foreignKey: {
@@ -86,12 +99,27 @@ Product.hasMany(Attribute,
     sourceKey: "product_id"
   }
 );
-Attribute.belongsTo(Product, {
+
+
+/**
+ * @summary: ATTRIBUTE & ATTRIBUTE TYPE
+ * @description: Relation between Attribute and Attribute Type
+ */
+AttributeType.hasMany(Attribute, 
+  {
+    foreignKey: {
+      name: "fk_attribute_type_id",
+      allowNull: false
+    },
+    sourceKey: "attribute_type_id"
+  }
+);
+Attribute.belongsTo(AttributeType, {
   foreignKey: {
-    name: "fk_product_id",
+    name: "fk_attribute_type_id",
     allowNull: false
   },
-  targetKey: "product_id",
+  targetKey: "attribute_type_id",
 });
 
 
@@ -99,7 +127,7 @@ Attribute.belongsTo(Product, {
  * @summary: PRODUCT & STOCK
  * @description: Relation between stock et product
  */
-Product.hasOne(Stock, {
+Product.hasMany(Stock, {
   foreignKey: {
     name: "fk_product_id",
     allowNull: false
@@ -214,44 +242,51 @@ SerializationType.hasMany(Serialization, {
   sourceKey: "serialization_type_id"
 });
 
+
 /**
- * @summary: SERIALIZATION & STOCK
- * @description: Relation between serialization and stock
+ * @summary: SERIALIZATION & SHOP
+ * @description: Relation between serialization et shop
  */
-Serialization.belongsTo(Attribute, {
+Serialization.belongsTo(Shop, {
   foreignKey: {
-    name: "fk_attribute_id",
+      name: "fk_shop_id",
       allowNull: false
-  },
-  targetKey: "attribute_id"
-});
-Attribute.hasOne(Serialization, {
-  foreignKey: {
-    name: "fk_attribute_id",
-    allowNull: false
-  },
-  sourceKey: "attribute_id"
-})
-
-
-/**
- * @summary: USER & SHOP
- * @description: Relation between user and shop
- */
-User.belongsTo(Shop, {
-  foreignKey: {
-    name: "fk_shop_id",
-    allowNull: false
   },
   targetKey: "shop_id"
 });
-Shop.hasMany(User, {
+Shop.hasMany(Serialization, {
   foreignKey: {
       name: "fk_shop_id",
       allowNull: false
   },
   sourceKey: "shop_id"
 });
+
+
+/**
+ * @summary: USER & SHOP
+ * @description: Relation between user and shop
+ */
+User.belongsToMany(
+  Shop, 
+  { 
+    through: UserShop,
+    foreignKey: {
+      name: "user_id",
+      allowNull: false
+    } 
+  }
+);
+Shop.belongsToMany(
+  User, 
+  { 
+    through: UserShop,
+    foreignKey: {
+      name: "shop_id",
+      allowNull: false
+    } 
+  }
+);
 
 
 /**
@@ -299,12 +334,199 @@ Role.belongsToMany(
   }
 );
 
+
+/**
+ * @summary: PRODUCT & PRICE 
+ * @description: Relation between product and price
+ */
+Product.hasMany(Price, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  sourceKey: "product_id"
+});
+Price.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id"
+});
+
+/**
+ * @summary: SHOP & PRICE 
+ * @description: Relation between shop and price
+ */
+Shop.hasMany(Price, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Price.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+
+/**
+ * @summary: PRICE & ATTRIBUTE
+ * @description: Relation between price and attribute
+ */
+Price.hasMany(Attribute, {
+  foreignKey: {
+    name: "fk_price_id",
+    allowNull: false
+  },
+  sourceKey: "price_id"
+});
+Attribute.belongsTo(Price, {
+  foreignKey: {
+    name: "fk_price_id",
+    allowNull: false
+  },
+  targetKey: "price_id"
+});
+
+
+/**
+ * @summary: TransfertStatus & StockTransfer
+ * @description: Relation between TransfertStatus and StockTransfer
+ */
+TransferStatus.hasMany(Transfer, {
+  foreignKey: {
+    name: "fk_transfer_status_id",
+    allowNull: false
+  },
+  sourceKey: "transfer_status_id"
+});
+Transfer.belongsTo(TransferStatus, {
+  foreignKey: {
+    name: "fk_transfer_status_id",
+    allowNull: false
+  },
+  targetKey: "transfer_status_id"
+});
+
+// Type de transfert (envoi / reception)
+TransferType.hasMany(Transfer, {
+  foreignKey: {
+    name: "fk_transfer_type_id",
+    allowNull: false
+  },
+  sourceKey: "transfer_type_id"
+})
+Transfer.belongsTo(TransferType, {
+  foreignKey: {
+    name: "fk_transfer_type_id",
+    allowNull: false
+  },
+  targetKey: "transfer_type_id"
+});
+
+
+/**
+ * @summary: product & StockTransfer & user (sender & receiver) & shop (sender & receiver)
+ * @description: Relation with StockTransfer
+ */
+// Product
+Product.hasMany(Transfer, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  sourceKey: "product_id"
+});
+Transfer.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id"
+});
+
+// User senders
+User.hasMany(Transfer,  {
+  foreignKey: {
+    name: "fk_user_sender",
+    allowNull: false
+  },
+  sourceKey: "user_id"
+});
+Transfer.belongsTo(User, {
+  as: "user_sender",
+  foreignKey: {
+    name: "fk_user_sender",
+    allowNull: false
+  },
+  targetKey: "user_id"
+});
+
+// User receiver
+User.hasMany(Transfer, {
+  foreignKey: {
+    name: "fk_user_receiver",
+    allowNull: false
+  },
+  sourceKey: "user_id"
+});
+Transfer.belongsTo(User, {
+  as: "user_receiver",
+  foreignKey: {
+    name: "fk_user_receiver",
+    allowNull: false
+  },
+  targetKey: "user_id"
+});
+
+// Shop sender
+Shop.hasMany(Transfer,  {
+  foreignKey: {
+    name: "fk_shop_sender",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Transfer.belongsTo(Shop, {
+  as: "shop_sender",
+  foreignKey: {
+    name: "fk_shop_sender",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+
+// Shop receiver
+Shop.hasMany(Transfer,  {
+  foreignKey: {
+    name: "fk_shop_receiver",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Transfer.belongsTo(Shop, {
+  as: "shop_receiver",
+  foreignKey: {
+    name: "fk_shop_receiver",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+
+
+
 module.exports = { 
   Company, 
   Shop, 
   Category, 
-  Product, 
-  Attribute, 
+  Product,
+  Price,
+  Attribute,
+  AttributeType,
   Stock, 
   StockMovment, 
   StockMovmentType, 
@@ -313,5 +535,8 @@ module.exports = {
   Role,
   User,
   Authorization,
-  AuthorizationRole
+  AuthorizationRole,
+  TransferStatus,
+  Transfer,
+  TransferType
 };

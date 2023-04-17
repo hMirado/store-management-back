@@ -8,7 +8,7 @@ export const getPagination = (page: any, size?: number) => {
   return { limit, offset };
 }
 
-export const getPagingData = (data: typeof model.Category | typeof model.Product, page: any, limit: number) => {
+export const getPagingData = (data: any, page: any, limit: number) => {
   const { count: totalItems, rows: items } = data;
   const currentPage = page ? +(page) + 1 : 1;
   const totalPages = Math.ceil(totalItems / limit);

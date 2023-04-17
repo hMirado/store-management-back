@@ -10,9 +10,16 @@ export const loginHandler = async (req: Request, res: Response) => {
     const user: typeof User = await findUserByEmailOrPhoneNumber(emailOrPhoneNumber);
     if (!user) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'L\'utilisateur est inexistante.'});
 
+    console.log(user);
+    
     const token = await login(user, password);
-    //return res.status(200).cookie('token', token, { maxAge: 10 * 60 * 60 * 1000, httpOnly: true }).json({status: 200, data: token, notification: 'Utilisateur connecté'});
-    return res.status(200).json({status: 200, data: token, notification: 'Utilisateur connecté'});
+    delete user.password;
+    if (token) {
+      //return res.status(200).cookie('token', token, { maxAge: 10 * 60 * 60 * 1000, httpOnly: true }).json({status: 200, data: token, notification: 'Utilisateur connecté'});
+      return res.status(200).json({status: 200, data: {token: token, user: user}, notification: 'Utilisateur connecté'});
+    } else {
+      return res.status(200).json({status: 200, notification: 'Mots de passe incorrecte'});
+    }
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ body: error, notification: "Erreur système" })

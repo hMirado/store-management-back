@@ -20,7 +20,7 @@ export const createAttributeHandler = async (req: Request, res: Response) => {
     }
     
     const results: typeof model.Attribute = await createAttribute(newAttribures);
-    return res.status(201).json({status: 201, data: results, notification: 'Attributs des produits'});
+    return res.status(201).json({status: 201, data: results, notification: 'Attributs des produits ajoutés'});
   } catch (error) {
     console.log(error)
     return res.status(500).json({ error: error, notification: "Erreur système" });

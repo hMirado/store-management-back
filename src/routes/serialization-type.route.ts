@@ -1,7 +1,7 @@
 const router = require('express').Router();
 import { verifyToken } from "../middlewares/auth";
-import { getSerializationTypeBysHandler } from "../controllers/serialization-type.controller";
+import { getSerializationTypesHandler } from "../controllers/serialization-type.controller";
 
-router.get('/', verifyToken, getSerializationTypeBysHandler);
+router.get('/', verifyToken, getSerializationTypesHandler);
 
 module.exports = router;
