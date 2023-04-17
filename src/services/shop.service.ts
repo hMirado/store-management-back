@@ -29,3 +29,12 @@ export const getShopByStatus = async (status: boolean) => {
     throw new Error(error);
   }
 }
+
+export const getShop = async () => {
+  try {
+    return await model.Shop.findAll();
+  } catch (error: any) {
+    console.error('shop.service::getShop', error)
+    throw new Error(error);
+  }
+}

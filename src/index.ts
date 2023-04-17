@@ -17,6 +17,7 @@ const serializationRoute = require("./routes/serialization.route");
 const attributeTypeRoute = require("./routes/attribute-type.route");
 const transferRoute = require("./routes/transfer.route");
 const roleRoute = require("./routes/role.route");
+const priceRoute = require("./routes/price.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -51,6 +52,7 @@ app.use("/serialization", serializationRoute);
 app.use("/attribute-type", attributeTypeRoute);
 app.use("/transfer", transferRoute);
 app.use("/role", roleRoute);
+app.use("/price", priceRoute);
 
 const port = process.env.PORT;
 app.listen(port, () => {

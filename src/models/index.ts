@@ -355,6 +355,25 @@ Price.belongsTo(Product, {
 });
 
 /**
+ * @summary: SHOP & PRICE 
+ * @description: Relation between shop and price
+ */
+Shop.hasMany(Price, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Price.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+
+/**
  * @summary: PRICE & ATTRIBUTE
  * @description: Relation between price and attribute
  */

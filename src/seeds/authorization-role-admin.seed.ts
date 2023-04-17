@@ -33,6 +33,6 @@ module.exports = () => {
     { role_id: 2, authorization_id: 2 },
     { role_id: 2, authorization_id: 3 },
     { role_id: 2, authorization_id: 4 },
-    { role_id: 2, authorization_id: 17 },
+    { role_id: 2, authorization_id: 16 },
   ]).then(() => console.log('Seed Authorization - Role completed.'))
 };

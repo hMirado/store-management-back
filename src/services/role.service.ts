@@ -82,6 +82,9 @@ const generateAuthorizationTree = (authorizations: any[]) => {
   // 1 - map the objects by their authorization_id property
   authorizations.forEach((authorization) => {
     authorization.authorization_child = [];
+    console.log(authorization.authorization_id);
+    console.log("\nauthorization", authorization);
+    
     map[authorization.authorization_id] = authorization;
   });
 
@@ -89,6 +92,8 @@ const generateAuthorizationTree = (authorizations: any[]) => {
   authorizations.forEach((authorization) => {
     if (authorization.authorization_parent !== null) {
       const parent = map[authorization.authorization_parent];
+      console.log(map[authorization.authorization_parent]);
+      
       parent.authorization_child.push(authorization);
     } else {
       result.push(authorization);
