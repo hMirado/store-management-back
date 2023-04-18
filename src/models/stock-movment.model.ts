@@ -20,8 +20,5 @@ export const StockMovment = sequelize.define(
 			type: Sequelize.INTEGER,
 			allowNull: false,
 		},
-	},
-	{
-		paranoid: true,
 	}
 );

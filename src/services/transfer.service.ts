@@ -9,7 +9,7 @@ export const getTransfertStatusByCode = async (code: string) => {
       where: {transfer_status_code: code}
     })
   } catch (error: any) {
-    console.log("\n transfer.service::getTransfertStatusByCode");
+    console.log("\n transfer.service::getTransfertStatusByCode", error);
     throw new Error(error);
   }
 }
@@ -21,7 +21,7 @@ export const createTransfer = async (values: typeof model.Transfer, _transaction
       { transaction: _transaction }
     )
   } catch (error: any) {
-    console.log("\n transfer.service::createTransfer");
+    console.log("\n transfer.service::createTransfer", error);
     throw new Error(error);
   }
 }
@@ -160,7 +160,7 @@ export const getTransfer = async (uuid: string) => {
       }
     )
   } catch (error: any) {
-    console.log("\n transfer.service::getTransfer");
+    console.log("\n transfer.service::getTransfer", error);
     throw new Error(error);
   }
 }
@@ -184,7 +184,7 @@ export const getTransferByUuidByShop = async (uuid: string, shopId: number, inPr
       return transferProductWithOutSerialization(uuid, shopId, inProgress);
     }
   } catch (error: any) {
-    console.log("\n transfer.service::getTransferByUuidByShop");
+    console.log("\n transfer.service::getTransferByUuidByShop", error);
     throw new Error(error);
   }
 }
@@ -298,7 +298,7 @@ export const getAttributeSerializationTransfer = async (shop: number, product: n
       group: 'attribute_serialization'
     });
   } catch (error: any) {
-    console.log("\n transfer.service::getAttributeSerializationTransfer");
+    console.log("\n transfer.service::getAttributeSerializationTransfer", error);
     throw new Error(error);
   }
 }
@@ -320,7 +320,7 @@ export const updateIsInTransferSerializationTransfer = async (shop: number, prod
       {transaction: _transaction}
     )
   } catch (error: any) {
-    console.log("\n transfer.service::updateAttributeSerializationTransfer");
+    console.log("\n transfer.service::updateAttributeSerializationTransfer", error);
     throw new Error(error);
   }
 }
@@ -338,7 +338,7 @@ export const updateTransfer = async (transferId: number, value: any, _transactio
       {transaction: _transaction}
     );
   } catch (error: any) {
-    console.log("\n transfer.service::updateTransfer");
+    console.log("\n transfer.service::updateTransfer", error);
     throw new Error(error);
   }
 }

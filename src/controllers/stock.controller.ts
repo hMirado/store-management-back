@@ -7,7 +7,8 @@ import {
   editStock, 
   createStockMovment,
   countProductInStock,
-  countProductOutStock
+  countProductOutStock,
+  addStock
 } from '../services/stock.service'
 import { getShopByUuid } from '../services/shop.service'
 import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.service'
@@ -18,17 +19,6 @@ import { createPrice } from '../services/price.service';
 import { ADMIN } from "../config/constants";
 const sequelize = require("../config/db.config");
 const model = require("../models/index");
-
-module.exports.addStock = async (req: Request, res: Response) => {
-  try {
-    const stock = ['addStock(req)'];
-    return res.status(200).json({status: 200, data: stock, notification: 'Stock importées avec succès'});
-  } catch (error) {
-    return res
-			.status(500)
-			.json({ error: error, notification: "Erreur système" });
-  }
-}
 
 export const getProductsInStockHandler = async (req: Request, res: Response) => {
   let shopUuid: string|null = req.query.shop ? req.query.shop as string : null
@@ -195,6 +185,30 @@ export const countStock = async (req: Request, res: Response) => {
     return await res.status(200).json({status: 200, data: result, notification: "Total des stocks"})
 
   } catch (error: any) {
+    console.error("\nstock.controller::countStock", error)
+    return await res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const addStockStockHandler = async (req: Request, res: Response) => {
+  try {
+    const _product = await getProductByUuid(req.body.product);
+    if (!_product) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Article inconnu.'});
+
+    const _shop = await getShopByUuid(req.body.shop);
+    if (!_shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
+
+    const _stock = await getStockById(_shop.shop_id, _product.product_id);
+    const existedStock = {
+      isExist: _stock ? true: false,
+      stockId: _stock ? _stock.stock_id : null,
+      quantity: _stock ? +_stock.quantity : null
+    }
+    const stock = await addStock(_product.product_id, _shop.shop_id, _product.is_serializable, existedStock, req );
+
+    return await res.status(201).json({status: 201, data: stock, notification: "Stocks d'article ajoutés"})
+  } catch (error: any) {
+    console.error("\nstock.controller::createStockHandler", error)
     return await res.status(500).json({ error: error, notification: "Erreur système" });
   }
 }

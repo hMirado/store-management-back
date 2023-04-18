@@ -2,6 +2,9 @@ const model = require("../models/index");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
+import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
+import { createMultipleSerialization } from "./serialization.service";
+const sequelize = require("../config/db.config");
 
 export const getStockByIdAndShop = async (product: number, shop: number) => {
   try {
@@ -13,38 +16,6 @@ export const getStockByIdAndShop = async (product: number, shop: number) => {
     })
   } catch (error: any) {
     throw new Error(error);
-  }
-};
-
-export const addStock = async (value: typeof model.Stock, transaction: IDBTransaction) => {
-  try {
-    return await model.Stock.create(value, {transaction: transaction})
-  } catch (error: any) {
-    throw new Error(error);
-  }
-};
-
-export const updateStock = async (quantity: number, conditions: Object, transaction: IDBTransaction) => {
-  try {
-    return await model.Stock.update(
-      {
-        quantity: quantity
-      },
-      {
-        where: conditions
-      },
-      {transaction: transaction}
-    )
-  } catch (error) {
-    throw error;
-  }
-};
-
-export const addStockMovment = async (value: typeof model.StockMovment, transaction: IDBTransaction) => {
-  try {
-    return await model.StockMovment.create(value, {transaction: transaction})
-  } catch (error: any) {
-    throw error;
   }
 };
 
@@ -269,6 +240,65 @@ export const countProductOutStock = async (shopId: number|null = null) => {
   } catch (error:any) {
     console.log('\nstock.service::countProductOutStock');
     console.log(error);
+    throw new Error(error);
+  }
+}
+
+export const addStock = async (productId: number, shopId: number, isSerializable: boolean, _stock: any, req: Request,_transaction: IDBTransaction | any = null) => {
+  const transaction = await sequelize.transaction();
+  const quantity = req.body.quantity;
+  const serializations = req.body.serializations;
+  let stockImported: any = {};
+  try {
+    const stockMovmentType = await getStockMovmentTypeByMovment('IN-IMPORT');
+    const stockMovment = [{
+      quantity: quantity,
+      fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
+      fk_product_id: productId,
+      fk_shop_id: shopId
+    }];
+    stockImported.movment = await createStockMovment(stockMovment, transaction);
+
+    if (!_stock['isExist']) {
+      const stock = {
+        quantity: req.body.quantity,
+        fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
+        fk_shop_id: shopId,
+        fk_product_id: productId
+      }
+      stockImported.stock = await createStock(stock, transaction);
+    } else {
+      stockImported.stock = await editStock(quantity + _stock['quantity'], _stock['stockId'], transaction);
+    }
+
+    if (isSerializable) {
+      serializations.map((serialization: any) => {
+        return serialization.map((value: any) => {
+          return {
+            serialization_value: value.serialization,
+            fk_serialization_type_id: value.type,
+            fk_shop_id: shopId,
+            fk_product_id: productId
+          }
+        })
+      });
+      let flatSerialization = serializations.flatMap((subSerialization: any) => [...subSerialization]);
+      const serializationValue = flatSerialization.map((value: any) => {
+        return {
+          serialization_value: value.serialization,
+          fk_serialization_type_id: value.type,
+          fk_shop_id: shopId,
+          fk_product_id: productId
+        }
+      })
+      stockImported.serialization = await createMultipleSerialization(serializationValue, transaction);
+    }
+
+    await transaction.commit();
+    return stockImported;
+  } catch (error: any) {
+    await transaction.rollback();
+    console.error("\nstock.controller::addStock", error);
     throw new Error(error);
   }
 }

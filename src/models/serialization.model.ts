@@ -21,20 +21,13 @@ export const Serialization = sequelize.define(
 			allowNull: true,
 			unique: false,
 		},
-		attribute_serialization: {
-			type: Sequelize.STRING,
-			allowNull: false,
-		},
-		isSold: {
+		is_sold: {
 			type: Sequelize.BOOLEAN,
 			defaultValue: false,
 		},
-		isInTransfer: {
+		is_in_transfer: {
 			type: Sequelize.BOOLEAN,
 			defaultValue: false,
 		},
-	},
-	{
-		paranoid: true,
 	}
 );
