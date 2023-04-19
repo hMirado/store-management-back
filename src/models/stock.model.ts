@@ -19,11 +19,7 @@ const Stock = sequelize.define(
 		quantity: {
 			type: Sequelize.INTEGER,
 			allowNull: false,
-		},
-		// product_uuid: {
-		//     type: Sequelize.UUID,
-		//     allowNull: false,
-		// }
+		}
 	}
 );
 

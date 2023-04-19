@@ -10,8 +10,6 @@ export const loginHandler = async (req: Request, res: Response) => {
     const user: typeof User = await findUserByEmailOrPhoneNumber(emailOrPhoneNumber);
     if (!user) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'L\'utilisateur est inexistante.'});
 
-    console.log(user);
-    
     const token = await login(user, password);
     delete user.password;
     if (token) {
@@ -21,7 +19,7 @@ export const loginHandler = async (req: Request, res: Response) => {
       return res.status(200).json({status: 200, notification: 'Mots de passe incorrecte'});
     }
   } catch (error: any) {
-    console.log(error);
+    console.log("authentication.controller::loginHandler",error);
     return res.status(500).json({ body: error, notification: "Erreur système" })
   }
 };

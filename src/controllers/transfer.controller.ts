@@ -158,7 +158,7 @@ export const validateTransferHandler = async (req: Request, res: Response) => {
     return await res.status(201).json({status: 200, data: newTransfert, notification: "Transfert de stock crée."})
   } catch (error: any) {
     await transaction.rollback();
-    console.log(error)
+    console.log("transfer.controller::validateTransferHandler",error)
     return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
   }
 }
@@ -168,7 +168,7 @@ export const getAllTransferHandler = async (req: Request, res: Response) => {
     const transferData: typeof model.Transfer = await getAllTransfer(req.query);
     return await res.status(200).json({status: 200, data: transferData, notification: "Liste des envois et réceptions."})
   } catch (error: any) {
-    console.log(error)
+    console.log("transfer.controller::getAllTransferHandler",error)
     return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
   }
 }
@@ -184,7 +184,7 @@ export const getTransferByUuidByShopHandler = async (req: Request, res: Response
     const transfer: typeof model.Transfer = await getTransferByUuidByShop(transferUuid, shop.shop_id, Boolean(+inProgress));
     return await res.status(200).json({status: 200, data: transfer, notification: "Détail du transfert."})
   } catch (error: any) {
-    console.log(error)
+    console.log("transfer.controller::getTransferByUuidByShopHandler",error)
     return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
   }
 }

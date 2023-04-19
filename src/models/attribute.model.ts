@@ -19,10 +19,6 @@ export const Attribute = sequelize.define(
 			type: Sequelize.STRING,
 			allowNull: false,
 		},
-		attribute_serialization: {
-			type: Sequelize.STRING,
-			allowNull: false,
-		},
 		is_sold: {
 			type: Sequelize.BOOLEAN,
 			defaultValue: false,

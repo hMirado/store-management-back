@@ -18,23 +18,20 @@ export const Serialization = sequelize.define(
 		},
 		serialization_value: {
 			type: Sequelize.STRING,
-			allowNull: true,
+			allowNull: false,
 			unique: false,
 		},
-		attribute_serialization: {
+		is_sold: {
+			type: Sequelize.BOOLEAN,
+			defaultValue: false,
+		},
+		is_in_transfer: {
+			type: Sequelize.BOOLEAN,
+			defaultValue: false,
+		},
+		group_id: {
 			type: Sequelize.STRING,
-			allowNull: false,
-		},
-		isSold: {
-			type: Sequelize.BOOLEAN,
-			defaultValue: false,
-		},
-		isInTransfer: {
-			type: Sequelize.BOOLEAN,
-			defaultValue: false,
-		},
-	},
-	{
-		paranoid: true,
+			allowNull: true
+		}
 	}
 );

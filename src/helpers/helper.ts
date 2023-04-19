@@ -8,3 +8,12 @@ export const generateId = () => {
 
   return result;
 }
+
+export const generateUniqueId = () => {
+  let result = "";
+  for (let i = 0; i < 3; i++) {
+    result += String.fromCharCode(97 + Math.floor(Math.random() * 26)).toLocaleUpperCase();
+  }
+  result += "-" + Math.floor(Math.random() * 1000000000000);
+  return result;
+}
