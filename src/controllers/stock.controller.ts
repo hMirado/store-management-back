@@ -204,7 +204,7 @@ export const addStockStockHandler = async (req: Request, res: Response) => {
       stockId: _stock ? _stock.stock_id : null,
       quantity: _stock ? +_stock.quantity : null
     }
-    const stock = await addStock(_product.product_id, _shop.shop_id, _product.is_serializable, existedStock, req );
+    const stock = await addStock(_product, _shop.shop_id, _product.is_serializable, existedStock, req );
 
     return await res.status(201).json({status: 201, data: stock, notification: "Stocks d'article ajoutés"})
   } catch (error: any) {

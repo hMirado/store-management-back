@@ -35,21 +35,20 @@ export const getSerializationByValue = async (value: string, type: number) => {
   }
 }
 
-export const getSerializationByProductShop = async (productId: number, shopId: number, isSold: string | null = null) => {
-  const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.attribute_serialization, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
+export const getSerializationByProductShop = async (productId: number, shopId: number, isSold: boolean = false) => {
+  const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
   let query = `
     SELECT ${column} FROM serializations sr
     INNER JOIN serialization_types st ON sr.fk_serialization_type_id = st.serialization_type_id
     INNER JOIN shops s ON sr.fk_shop_id = s.shop_id
     INNER JOIN stocks sto ON sr.fk_shop_id = sto.fk_shop_id
     INNER JOIN products p ON sr.fk_product_id = p.product_id
-    INNER JOIN attributes a ON sr.attribute_serialization = a.attribute_serialization
     WHERE p.product_id = ${productId}
   `;
   try {
     query += shopId > 0 ? ` AND s.shop_id = ${shopId}` : '';
-    query += (isSold && isSold != '') ? ` AND a.is_sold = ${+isSold}` : '';
-    query += ' AND isInTransfer = false';
+    query += ` AND sr.is_sold = ${isSold}`;
+    query += ' AND sr.is_in_transfer = false';
     query += ' GROUP BY sr.serialization_id'
     
     const serializations: typeof model.Serialization =  await sequelize.query(
@@ -57,37 +56,16 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
       {
         type: QueryTypes.SELECT
       }
-    )
+    );
+    
+    const grouped = serializations.reduce((result: typeof model.Serialization, item: typeof model.Serialization) => {
+      const { group_id } = item;
+      result[group_id] = result[group_id] ?? [];
+      result[group_id].push(item);
+      return result
+    }, {});
 
-    let serializationsGrouped: any[] = [];
-    serializations.forEach((serialization: typeof model.Serialization ) => {
-      serializationsGrouped.push(
-        {
-          serialization_id: serialization.serialization_id,
-          serialization_uuid: serialization.serialization_uuid,
-          serialization_value: serialization.serialization_value,
-          attribute_serialization: serialization.attribute_serialization,
-          fk_product_id: serialization.product_id,
-          fk_serialization_type_id: serialization.serialization_type_id,
-          fk_shop_id: serialization.shop_id,
-          serialization_type_code: serialization.code,
-          serialization_type_label: serialization.label
-        }
-      )
-    })
-    const grouped = serializationsGrouped.reduce((group: typeof model.Serialization, serialization: typeof model.Serialization) => {
-      const { attribute_serialization } = serialization;
-      group[attribute_serialization] = group[attribute_serialization] ?? [];
-      group[attribute_serialization].push(serialization);
-      return group
-    }, {})
-
-    let results = [];
-    for (const key in grouped) {
-      results.push(grouped[key])
-    }
-
-    return results;
+    return Object.values(grouped);
   } catch (error: any) {
     console.log('\nserialization.service::getProductSerialization');
     console.log(error);

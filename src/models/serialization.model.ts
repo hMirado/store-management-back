@@ -18,7 +18,7 @@ export const Serialization = sequelize.define(
 		},
 		serialization_value: {
 			type: Sequelize.STRING,
-			allowNull: true,
+			allowNull: false,
 			unique: false,
 		},
 		is_sold: {
@@ -29,5 +29,9 @@ export const Serialization = sequelize.define(
 			type: Sequelize.BOOLEAN,
 			defaultValue: false,
 		},
+		group_id: {
+			type: Sequelize.STRING,
+			allowNull: true
+		}
 	}
 );

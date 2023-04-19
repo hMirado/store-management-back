@@ -4,6 +4,7 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 import { createMultipleSerialization } from "./serialization.service";
+import { generateUniqueId } from "../helpers/helper";
 const sequelize = require("../config/db.config");
 
 export const getStockByIdAndShop = async (product: number, shop: number) => {
@@ -71,15 +72,15 @@ export const getProductsInStock = async (req: Request, shop: string|null = null)
             },
             {
               model: model.Product,
-              where: productCondition
+              where: productCondition,
+              order: [
+                ['label', 'asc']
+              ],
             }
           ],
           where: quantityCondition,
           offset,
           limit,
-          order: [
-            ['updatedAt', 'DESC']
-          ],
         }
       );
       return getPagingData(stocks, +page, 10);
@@ -166,9 +167,6 @@ export const createStock = async (stock: typeof model.Stock, _transaction: IDBTr
     return await model.Stock.create(
       stock,
       {
-        updateOnDuplicate: ["fk_shop_id", "fk_product_id"]
-      },
-      {
         transaction: _transaction
       }
     );
@@ -244,7 +242,7 @@ export const countProductOutStock = async (shopId: number|null = null) => {
   }
 }
 
-export const addStock = async (productId: number, shopId: number, isSerializable: boolean, _stock: any, req: Request,_transaction: IDBTransaction | any = null) => {
+export const addStock = async (product: typeof model.Product, shopId: number, isSerializable: boolean, _stock: any, req: Request,_transaction: IDBTransaction | any = null) => {
   const transaction = await sequelize.transaction();
   const quantity = req.body.quantity;
   const serializations = req.body.serializations;
@@ -254,7 +252,7 @@ export const addStock = async (productId: number, shopId: number, isSerializable
     const stockMovment = [{
       quantity: quantity,
       fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
-      fk_product_id: productId,
+      fk_product_id: product.product_id,
       fk_shop_id: shopId
     }];
     stockImported.movment = await createStockMovment(stockMovment, transaction);
@@ -264,7 +262,7 @@ export const addStock = async (productId: number, shopId: number, isSerializable
         quantity: req.body.quantity,
         fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
         fk_shop_id: shopId,
-        fk_product_id: productId
+        fk_product_id: product.product_id
       }
       stockImported.stock = await createStock(stock, transaction);
     } else {
@@ -272,26 +270,20 @@ export const addStock = async (productId: number, shopId: number, isSerializable
     }
 
     if (isSerializable) {
-      serializations.map((serialization: any) => {
+      const formatedSerialization = serializations.map((serialization: any) => {
+        const id: string = generateUniqueId();
         return serialization.map((value: any) => {
           return {
             serialization_value: value.serialization,
             fk_serialization_type_id: value.type,
             fk_shop_id: shopId,
-            fk_product_id: productId
+            fk_product_id: product.product_id,
+            group_id: id
           }
         })
       });
-      let flatSerialization = serializations.flatMap((subSerialization: any) => [...subSerialization]);
-      const serializationValue = flatSerialization.map((value: any) => {
-        return {
-          serialization_value: value.serialization,
-          fk_serialization_type_id: value.type,
-          fk_shop_id: shopId,
-          fk_product_id: productId
-        }
-      })
-      stockImported.serialization = await createMultipleSerialization(serializationValue, transaction);
+      let flatSerialization = formatedSerialization.flatMap((subSerialization: any) => [...subSerialization]);
+      stockImported.serialization = await createMultipleSerialization(flatSerialization, transaction);
     }
 
     await transaction.commit();
