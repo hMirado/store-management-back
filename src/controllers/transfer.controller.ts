@@ -1,5 +1,14 @@
 import { Request, Response } from "express";
-import { getTransfertStatusByCode, createTransfer, getAllTransfer, getTransferByUuidByShop, getTransfer, updateIsInTransferSerializationTransfer, updateTransfer } from "../services/transfer.service";
+import { 
+  getTransfertStatusByCode, 
+  createTransfer, 
+  getAllTransfer,
+  getTransferByUuidByShop,
+  getTransfer,
+  updateIsInTransferSerializationTransfer,
+  updateTransfer,
+  addTransfer
+} from "../services/transfer.service";
 import { getShopByUuid } from '../services/shop.service';
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid, getProductById } from "../services/product.service";
@@ -10,7 +19,7 @@ const sequelize = require("../config/db.config");
 const model = require("../models/index");
 import { transferStatus as status } from "../config/constants"
 
-export const createTransferHandler = async (req: Request, res: Response) => {
+export const createTransferHandlerOld = async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   let newTransfert: any = {};
   const userSenderUuid: string = req.body.userSender;
@@ -74,7 +83,7 @@ export const createTransferHandler = async (req: Request, res: Response) => {
       let newSerialization = [];
       for (const transferSerialization of transferSerializations) {
         const serialization: typeof model.Serialization = await getSerializationByProduct_Type_Value(product.product_id, transferSerialization['type'], transferSerialization['value']);
-        const serializationUpdated: typeof model.Serialization = await updateSerializationTransfer(serialization.attribute_serialization, shopReceiver.shop_id, true, transaction);
+        const serializationUpdated: typeof model.Serialization = await updateSerializationTransfer([], transaction);
         newSerialization.push(serializationUpdated);
       }
       newTransfert.serialization = newSerialization;
@@ -85,6 +94,26 @@ export const createTransferHandler = async (req: Request, res: Response) => {
   } catch (error: any) {
     await transaction.rollback();
     console.log(error)
+    return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
+  }
+}
+
+export const createTransferHandler = async (req: Request, res: Response) => {
+  const userUuid: string = req.body.user;
+  const shopSenderUuid: string = req.body.shop_sender;
+  const shopReceiverUuid: string = req.body.shop_receiver;
+  try {
+    const shopSender: typeof model.Shop = await getShopByUuid(shopSenderUuid);
+    const shopReceiver: typeof model.Shop = await getShopByUuid(shopReceiverUuid);
+    if (!shopSender || !shopReceiver) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Un des shops est inexistant.'});
+    
+    const user: typeof model.User = await findUserByUuid(userUuid);
+    if (!user) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistant.'});
+
+    const newTransfert = await addTransfer(user.user_id, shopSender.shop_id, shopSender.shop_id, req);
+    return await res.status(201).json({status: 201, data: newTransfert, notification: "Transfert d'article enregistré."})
+  } catch (error: any) {
+    console.log('transfer.controller::createTransferHandler',error);
     return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
   }
 }

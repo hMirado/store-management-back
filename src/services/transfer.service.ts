@@ -1,7 +1,11 @@
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
+import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
+import { generateCodeWithDate } from "../helpers/helper";
+import { getProductByUuid } from "./product.service";
+import { updateSerializationTransfer } from "./serialization.service";
 
 export const getTransfertStatusByCode = async (code: string) => {
   try {
@@ -340,5 +344,74 @@ export const updateTransfer = async (transferId: number, value: any, _transactio
   } catch (error: any) {
     console.log("\n transfer.service::updateTransfer", error);
     throw new Error(error);
+  }
+}
+
+export const addTransfer = async (user: number, shopSender: number, shopReceiver: number, req: Request) => {
+  const transaction = await sequelize.transaction();
+  let newTransfer: any = {};
+  try {
+    const transferStatus: typeof model.TransfertStatus = await getTransfertStatusByCode('IN_PROGRESS');
+    if (!transferStatus) {
+      throw new Error('Transfer status not found.');
+    }
+
+    const transferCode = `${generateCodeWithDate()}/${shopSender}/${shopReceiver}`;
+    const transfer: typeof model.Transfer = {
+      transfer_code: transferCode,
+      transfer_commentary: req.body.commentary || null,
+      fk_transfer_status_id: transferStatus.transfer_status_id,
+      fk_user_sender: user,
+      fk_user_receiver: user,
+      fk_shop_sender: shopSender,
+      fk_shop_receiver: shopReceiver,
+    } 
+    const transferCreated = await createTransfer(transfer, transaction);
+    newTransfer.transfer = transferCreated;
+
+    let serializationGroup: string[] = [];
+    let productSerializationQuantity: number = 0;
+    let products = await Promise.all(req.body.products.map(async (product: any) => {
+      if (product['is_serializable']) {
+        productSerializationQuantity += product['quantity']
+        const serialization = product['serializations'].map((serialization: any) => serialization.group_id)
+        serializationGroup = [...serializationGroup, ...serialization]
+      }
+      
+      const _product = await getProductByUuid(product.product_uuid);;
+      if (!_product) {
+        await transaction.rollback();
+        throw new Error('Product not found.');
+      }
+      
+      return {
+        transfer_id: transferCreated.transfer_id,
+        product_id: _product.product_id,
+        quantity: product['quantity']
+      }
+    }));
+
+    if (serializationGroup.length != productSerializationQuantity) {
+      await transaction.rollback();
+      throw new Error('Serialization not given.');
+    };
+
+    newTransfer.products = await model.TransferProduct.bulkCreate(products, { transaction: transaction })
+    newTransfer.serialization = await updateSerializationTransfer(serializationGroup);
+
+    await transaction.commit();
+    return newTransfer;
+  } catch (error: any) {
+    await transaction.rollback();
+    console.log("\n transfer.service::addTransfer", error);
+    throw new Error(error);
+  }
+}
+
+function callback(data: any) {
+  try {
+    return data
+  } catch (error: any) {
+    return "Not Found";
   }
 }

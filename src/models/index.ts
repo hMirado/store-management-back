@@ -18,6 +18,7 @@ import { TransferStatus } from "./transfer-status.model";
 import { Transfer } from "./transfer.model";
 import { TransferType } from './transfer-type.model';
 import { UserShop } from './user-shop.model';
+import { TransferProduct } from './transfer-product.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -413,20 +414,20 @@ Transfer.belongsTo(TransferStatus, {
 });
 
 // Type de transfert (envoi / reception)
-TransferType.hasMany(Transfer, {
-  foreignKey: {
-    name: "fk_transfer_type_id",
-    allowNull: false
-  },
-  sourceKey: "transfer_type_id"
-})
-Transfer.belongsTo(TransferType, {
-  foreignKey: {
-    name: "fk_transfer_type_id",
-    allowNull: false
-  },
-  targetKey: "transfer_type_id"
-});
+// TransferType.hasMany(Transfer, {
+//   foreignKey: {
+//     name: "fk_transfer_type_id",
+//     allowNull: false
+//   },
+//   sourceKey: "transfer_type_id"
+// })
+// Transfer.belongsTo(TransferType, {
+//   foreignKey: {
+//     name: "fk_transfer_type_id",
+//     allowNull: false
+//   },
+//   targetKey: "transfer_type_id"
+// });
 
 
 /**
@@ -434,20 +435,26 @@ Transfer.belongsTo(TransferType, {
  * @description: Relation with StockTransfer
  */
 // Product
-Product.hasMany(Transfer, {
-  foreignKey: {
-    name: "fk_product_id",
-    allowNull: false
-  },
-  sourceKey: "product_id"
-});
-Transfer.belongsTo(Product, {
-  foreignKey: {
-    name: "fk_product_id",
-    allowNull: false
-  },
-  targetKey: "product_id"
-});
+Product.belongsToMany(
+  Transfer, 
+  {
+    through: TransferProduct,
+    foreignKey: {
+      name: "product_id",
+      allowNull: false
+    }
+  }
+); 
+Transfer.belongsToMany(
+  Product, 
+  {
+    through: TransferProduct,
+    foreignKey: {
+      name: "transfer_id",
+      allowNull: false
+    }
+  }
+);
 
 // User senders
 User.hasMany(Transfer,  {
@@ -538,5 +545,6 @@ module.exports = {
   AuthorizationRole,
   TransferStatus,
   Transfer,
-  TransferType
+  TransferType,
+  TransferProduct
 };

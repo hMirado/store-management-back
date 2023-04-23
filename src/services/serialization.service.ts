@@ -89,17 +89,16 @@ export const getSerializationByProduct_Type_Value = async (productId: number, ty
   }
 }
 
-export const updateSerializationTransfer = async (attribute: string, shopId: number, isInTransfer: boolean = false,_transaction: IDBTransaction | any = null) => {
-  const newValue: any = {
-    fk_shop_id: shopId,
-    isInTransfer: isInTransfer
-  }
+export const updateSerializationTransfer = async (groupId: string[],_transaction: IDBTransaction | any = null) => {
   try {
     return await model.Serialization.update(
-      newValue,
-      { 
-        where: { attribute_serialization: attribute },
-        returning: true
+      {
+        is_in_transfer: 1
+      },
+      {
+        where: {
+          group_id: { [Op.in]: groupId }
+        }
       },
       { transaction: _transaction }
     )
