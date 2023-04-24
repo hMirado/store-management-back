@@ -294,3 +294,19 @@ export const addStock = async (product: typeof model.Product, shopId: number, is
     throw new Error(error);
   }
 }
+
+export const getStockByProductShop = async (productId: number, shopId: number) => {
+  try {
+    return await model.Stock.findOne(
+      {
+        where: {
+          fk_product_id: productId,
+          fk_shop_id: shopId
+        }
+      }
+    );
+  } catch (error: any) {
+    console.log('\nstock.servie::countProductInStock', error);
+    throw new Error(error);
+  }
+}

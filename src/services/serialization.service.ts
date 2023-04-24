@@ -73,6 +73,19 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
   }
 }
 
+export const getSerializationByGroup = async (group: string) => {
+  try {
+    return await model.Serialization.findOne({
+      where: {
+        group_id: group,
+      }
+    });
+  } catch (error: any) {
+    console.log('\nserialization.service::getSerializationByGroup', error);
+    throw new Error(error);
+  }
+}
+
 export const getSerializationByProduct_Type_Value = async (productId: number, type: number, serialization: string) => {
   try {
     return await model.Serialization.findOne({

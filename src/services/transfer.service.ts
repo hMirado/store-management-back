@@ -5,7 +5,8 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
 import { generateCodeWithDate } from "../helpers/helper";
 import { getProductByUuid } from "./product.service";
-import { updateSerializationTransfer } from "./serialization.service";
+import { updateSerializationTransfer, getSerializationByGroup } from "./serialization.service";
+import { getStockByProductShop } from "./stock.service";
 
 export const getTransfertStatusByCode = async (code: string) => {
   try {
@@ -352,10 +353,9 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
   let newTransfer: any = {};
   try {
     const transferStatus: typeof model.TransfertStatus = await getTransfertStatusByCode('IN_PROGRESS');
-    if (!transferStatus) {
-      throw new Error('Transfer status not found.');
-    }
+    if (!transferStatus) throw new Error('Transfer status not found.');
 
+    // add new transfer
     const transferCode = `${generateCodeWithDate()}/${shopSender}/${shopReceiver}`;
     const transfer: typeof model.Transfer = {
       transfer_code: transferCode,
@@ -369,21 +369,34 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     const transferCreated = await createTransfer(transfer, transaction);
     newTransfer.transfer = transferCreated;
 
+    // add product to transfer & update serialization is_in_transfer
     let serializationGroup: string[] = [];
     let productSerializationQuantity: number = 0;
     let products = await Promise.all(req.body.products.map(async (product: any) => {
+
+      // verify if product is in database
+      const _product: typeof model.Product = await getProductByUuid(product.product_uuid);;
+      if (!_product) throw new Error('Product not found.');
+
+      // verify if quantity is in stock
+      const _stock: typeof model.Stock = await getStockByProductShop(_product.product_id, shopSender);
+      if(!_stock) throw new Error('Product doesn\'t in stock.');
+      if(_stock && _stock.quantity < product['quantity']) throw new Error('Stock of product is less than quantity');
+
       if (product['is_serializable']) {
         productSerializationQuantity += product['quantity']
-        const serialization = product['serializations'].map((serialization: any) => serialization.group_id)
+        const serialization = await Promise.all(product['serializations'].map(async (serialization: any) => {
+         
+          // verify if serialization is in database and not in transfer actually
+          const _serialization: typeof model.Serialization = await getSerializationByGroup(serialization.group_id);
+          if (!_serialization) throw new Error('Serialization not found.');
+          if (_serialization.is_in_transfer) throw new Error('Serialization is actually in transfer.');
+
+          return serialization.group_id;
+        }))
         serializationGroup = [...serializationGroup, ...serialization]
       }
-      
-      const _product = await getProductByUuid(product.product_uuid);;
-      if (!_product) {
-        await transaction.rollback();
-        throw new Error('Product not found.');
-      }
-      
+
       return {
         transfer_id: transferCreated.transfer_id,
         product_id: _product.product_id,
@@ -392,12 +405,13 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     }));
 
     if (serializationGroup.length != productSerializationQuantity) {
-      await transaction.rollback();
       throw new Error('Serialization not given.');
     };
 
     newTransfer.products = await model.TransferProduct.bulkCreate(products, { transaction: transaction })
     newTransfer.serialization = await updateSerializationTransfer(serializationGroup);
+
+    //#TODO diminué la quantité en stock dans la base de données
 
     await transaction.commit();
     return newTransfer;
@@ -405,13 +419,5 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     await transaction.rollback();
     console.log("\n transfer.service::addTransfer", error);
     throw new Error(error);
-  }
-}
-
-function callback(data: any) {
-  try {
-    return data
-  } catch (error: any) {
-    return "Not Found";
   }
 }
