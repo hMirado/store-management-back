@@ -6,7 +6,7 @@ import { Op } from "sequelize";
 import { generateCodeWithDate } from "../helpers/helper";
 import { getProductByUuid } from "./product.service";
 import { updateSerializationTransfer, getSerializationByGroup } from "./serialization.service";
-import { getStockByProductShop } from "./stock.service";
+import { getStockByProductShop, updateStock } from "./stock.service";
 
 export const getTransfertStatusByCode = async (code: string) => {
   try {
@@ -372,6 +372,8 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     // add product to transfer & update serialization is_in_transfer
     let serializationGroup: string[] = [];
     let productSerializationQuantity: number = 0;
+    let stockUpdateds: any[] = []; 
+
     let products = await Promise.all(req.body.products.map(async (product: any) => {
 
       // verify if product is in database
@@ -382,6 +384,11 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
       const _stock: typeof model.Stock = await getStockByProductShop(_product.product_id, shopSender);
       if(!_stock) throw new Error('Product doesn\'t in stock.');
       if(_stock && _stock.quantity < product['quantity']) throw new Error('Stock of product is less than quantity');
+
+      // update stock quantity
+      const quantity = _stock.quantity - product['quantity']
+      const stockUpdated = await updateStock(quantity, _product.product_id, shopSender, transaction)
+      stockUpdateds.push(stockUpdated)
 
       if (product['is_serializable']) {
         productSerializationQuantity += product['quantity']
@@ -404,14 +411,15 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
       }
     }));
 
+    // add stock updated to response
+    newTransfer.stockUpdateds = stockUpdateds;
+
     if (serializationGroup.length != productSerializationQuantity) {
       throw new Error('Serialization not given.');
     };
 
     newTransfer.products = await model.TransferProduct.bulkCreate(products, { transaction: transaction })
     newTransfer.serialization = await updateSerializationTransfer(serializationGroup);
-
-    //#TODO diminué la quantité en stock dans la base de données
 
     await transaction.commit();
     return newTransfer;

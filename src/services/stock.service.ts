@@ -310,3 +310,30 @@ export const getStockByProductShop = async (productId: number, shopId: number) =
     throw new Error(error);
   }
 }
+
+export const updateStock = async (quantity: number, productId: number, shopId: number, _transaction: IDBTransaction | null = null) => {
+  try {
+
+    console.log("\n\n");
+    console.log(quantity);
+    console.log(productId);
+    console.log(shopId);
+    
+    return await model.Stock.update(
+      {
+        quantity: quantity
+      },
+      {
+        where: {
+         fk_product_id: productId,
+         fk_shop_id: shopId
+        }
+      },
+      { returning: true },
+      { transaction: _transaction }
+    )
+  } catch (error: any) {
+    console.log('\nstock.servie::updateStock', error);
+    throw new Error(error);
+  }
+}
