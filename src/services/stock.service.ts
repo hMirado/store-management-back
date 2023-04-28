@@ -313,12 +313,6 @@ export const getStockByProductShop = async (productId: number, shopId: number) =
 
 export const updateStock = async (quantity: number, productId: number, shopId: number, _transaction: IDBTransaction | null = null) => {
   try {
-
-    console.log("\n\n");
-    console.log(quantity);
-    console.log(productId);
-    console.log(shopId);
-    
     return await model.Stock.update(
       {
         quantity: quantity

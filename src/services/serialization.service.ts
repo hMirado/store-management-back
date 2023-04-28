@@ -35,7 +35,7 @@ export const getSerializationByValue = async (value: string, type: number) => {
   }
 }
 
-export const getSerializationByProductShop = async (productId: number, shopId: number, isSold: boolean = false) => {
+export const getSerializationByProductShop = async (productId: number, shopId: number, search: string = '', isSold: boolean = false) => {
   const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
   let query = `
     SELECT ${column} FROM serializations sr
@@ -47,6 +47,7 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
   `;
   try {
     query += shopId > 0 ? ` AND s.shop_id = ${shopId}` : '';
+    query += search != '' ? ` AND sr.serialization_value like '%${search}%'` : '';
     query += ` AND sr.is_sold = ${isSold}`;
     query += ' AND sr.is_in_transfer = false';
     query += ' GROUP BY sr.serialization_id'
