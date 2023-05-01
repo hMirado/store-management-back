@@ -100,23 +100,20 @@ export const getAllTransfer = async (params: any) => {
     }
   }
 
-  const page = (params.page && +params.page > 1) ? +params.page - 1 : 0;
-  const size = params.size ? params.size : 10;
-  const { limit, offset } = getPagination(page, +size);
+
+  
   try {
-    const data = await model.Transfer.findAndCountAll(
+    const page = (params.page && +params.page > 1) ? +params.page - 1 : 0;
+    const size = params.size ? params.size : 10;
+    const { limit, offset } = getPagination(page, +size);  console.log("\npage", page);
+    const transfers: typeof model.Transfer[] =  await model.Transfer.findAndCountAll(
       {
-        attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
+        attributes: ['transfer_id', 'transfer_uuid', 'transfer_code', 'createdAt', 'updatedAt'],
         include: [
           {
             model: model.TransferStatus,
             attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"],
             where: statusCondition
-          },
-          {
-            model: model.Product,
-            attributes: ["product_id", "product_uuid", "code", "label"],
-            where: productCondition
           },
           {
             model: model.User,
@@ -146,10 +143,11 @@ export const getAllTransfer = async (params: any) => {
           ['updatedAt', 'DESC']
         ],
       }
-    )
-    return getPagingData(data, +page, 10);
+    );
+    
+    return getPagingData(transfers, +page, 10);
   } catch (error: any) {
-    console.log("\n transfer.service::getAllTransfer");
+    console.log("\n transfer.service::getAllTransfer", error);
     throw new Error(error);
   }
 }
