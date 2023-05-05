@@ -1,20 +1,18 @@
 import { Request, Response } from "express";
 import { 
   getTransfertStatusByCode, 
-  createTransfer, 
   getAllTransfer,
   getTransferByUuidByShop,
   getTransfer,
   updateIsInTransferSerializationTransfer,
   updateTransfer,
-  addTransfer
+  addTransfer,
+  getTransferByUuid
 } from "../services/transfer.service";
 import { getShopByUuid } from '../services/shop.service';
 import { findUserByUuid } from "../services/user.service";
-import { getProductByUuid, getProductById } from "../services/product.service";
 import { getStockMovmentTypeByMovment } from "../services/stock-movment-type.service";
 import { createStockMovment, createStock, editStock, getStockById } from "../services/stock.service";
-import { getSerializationByProduct_Type_Value, updateSerializationTransfer } from "../services/serialization.service";
 const sequelize = require("../config/db.config");
 const model = require("../models/index");
 import { transferStatus as status } from "../config/constants"
@@ -135,6 +133,17 @@ export const getTransferByUuidByShopHandler = async (req: Request, res: Response
     return await res.status(200).json({status: 200, data: transfer, notification: "Détail du transfert."})
   } catch (error: any) {
     console.log("transfer.controller::getTransferByUuidByShopHandler",error)
+    return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
+  }
+}
+
+export const getTransferByUuidHandler = async (req: Request, res: Response) => {
+  const transferUuid: string = req.params.uuid;
+  try {
+    const transfer: typeof model.Transfer = await getTransferByUuid(transferUuid);
+    return await res.status(200).json({status: 200, data: transfer, notification: "Détail du transfert."})
+  } catch (error: any) {
+    console.log("transfer.controller::getTransferByUuidHandler",error)
     return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
   }
 }

@@ -26,7 +26,7 @@ app.use(bodyParser.json({limit: '50000mb'}));
 app.use(bodyParser.urlencoded({limit: '50000mb', parameterLimit: 100000000, extended: true}))
 app.use(cors());
 
-sequelize.sync({ alter: false, force: false });
+sequelize.sync({ alter: false , force: false });
 
 // sequelize
 //   .sync({ force: true })

@@ -19,6 +19,7 @@ import { Transfer } from "./transfer.model";
 import { TransferType } from './transfer-type.model';
 import { UserShop } from './user-shop.model';
 import { TransferProduct } from './transfer-product.model';
+import { TransferSerialization } from './transfer-serialization.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -431,7 +432,7 @@ Transfer.belongsTo(TransferStatus, {
 
 
 /**
- * @summary: product & StockTransfer & user (sender & receiver) & shop (sender & receiver)
+ * @summary: product & StockTransfer & Serialization & user (sender & receiver) & shop (sender & receiver)
  * @description: Relation with StockTransfer
  */
 // Product
@@ -449,6 +450,28 @@ Transfer.belongsToMany(
   Product, 
   {
     through: TransferProduct,
+    foreignKey: {
+      name: "transfer_id",
+      allowNull: false
+    }
+  }
+);
+
+// Serialization
+Serialization.belongsToMany(
+  Transfer,
+  {
+    through: TransferSerialization,
+    foreignKey: {
+      name: "serialization_id",
+      allowNull: false
+    }
+  }
+);
+Transfer.belongsToMany(
+  Serialization, 
+  {
+    through: TransferSerialization,
     foreignKey: {
       name: "transfer_id",
       allowNull: false
@@ -546,5 +569,6 @@ module.exports = {
   TransferStatus,
   Transfer,
   TransferType,
-  TransferProduct
+  TransferProduct,
+  TransferSerialization
 };

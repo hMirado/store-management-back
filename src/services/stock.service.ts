@@ -321,10 +321,10 @@ export const updateStock = async (quantity: number, productId: number, shopId: n
         where: {
          fk_product_id: productId,
          fk_shop_id: shopId
-        }
-      },
-      { returning: true },
-      { transaction: _transaction }
+        },
+        returning: true,
+        transaction: _transaction
+      }
     )
   } catch (error: any) {
     console.log('\nstock.servie::updateStock', error);

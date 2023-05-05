@@ -366,9 +366,11 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     } 
     const transferCreated = await createTransfer(transfer, transaction);
     newTransfer.transfer = transferCreated;
+    const transferId = transferCreated.transfer_id;
 
     // add product to transfer & update serialization is_in_transfer
     let serializationGroup: string[] = [];
+    let transferSerializations: any[] = [];
     let productSerializationQuantity: number = 0;
     let stockUpdateds: any[] = []; 
 
@@ -397,13 +399,19 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
           if (!_serialization) throw new Error('Serialization not found.');
           if (_serialization.is_in_transfer) throw new Error('Serialization is actually in transfer.');
 
+          transferSerializations.push(
+            {
+              transfer_id: transferId,
+              serialization_id: _serialization.serialization_id
+            }
+          );
           return serialization.group_id;
         }))
         serializationGroup = [...serializationGroup, ...serialization]
       }
 
       return {
-        transfer_id: transferCreated.transfer_id,
+        transfer_id: transferId,
         product_id: _product.product_id,
         quantity: product['quantity']
       }
@@ -415,15 +423,63 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     if (serializationGroup.length != productSerializationQuantity) {
       throw new Error('Serialization not given.');
     };
-
+    
     newTransfer.products = await model.TransferProduct.bulkCreate(products, { transaction: transaction })
-    newTransfer.serialization = await updateSerializationTransfer(serializationGroup);
+    newTransfer.serialization = await updateSerializationTransfer(serializationGroup, transferId, transaction);
+    newTransfer.transferSerialization = await model.TransferSerialization.bulkCreate(transferSerializations, { transaction: transaction })
 
     await transaction.commit();
     return newTransfer;
   } catch (error: any) {
     await transaction.rollback();
     console.log("\n transfer.service::addTransfer", error);
+    throw new Error(error);
+  }
+}
+
+export const getTransferByUuid = async (uuid: string) => {
+  try {
+    return model.Transfer.findOne(
+      {
+        include: [
+          {
+            model: model.Product
+          },
+          {
+            model: model.Serialization
+          },
+          {
+            model: model.TransferStatus,
+            attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"]
+          },
+          {
+            model: model.User,
+            as: 'user_sender',
+            attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+          },
+          {
+            model: model.User,
+            as: 'user_receiver',
+            attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+          },
+          {
+            model: model.Shop,
+            as: 'shop_sender',
+            attributes: ["shop_id", "shop_uuid", "shop_name"]
+          },
+          {
+            model: model.Shop,
+            as: 'shop_receiver',
+            attributes: ["shop_id", "shop_uuid", "shop_name"]
+          }
+        ],
+        where: {
+          transfer_uuid: uuid
+        }
+      }
+    )
+  } catch (error: any) {
+    console.log("\n transfer.service::getTransferByUuid", error);
     throw new Error(error);
   }
 }
