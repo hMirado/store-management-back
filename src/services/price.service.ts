@@ -40,8 +40,7 @@ export const updatePrice = async (productId: number, productUuid: string, prices
     ).then(async() => { return await getPrice(productUuid) });
     return isUpdated;
   } catch (error: any) {
-    console.log('\price.servie::updatePrice');
-    console.log(error);
+    console.log('\price.servie::updatePrice', error);
     throw new Error(error);
   }
 }
@@ -60,8 +59,7 @@ export const getPrice = async (productId: string, shop: string = '') => {
       ]
     })
   } catch (error: any) {
-    console.log('\price.servie::getPrice');
-    console.log(error);
+    console.log('\nprice.servie::getPrice', error);
     throw new Error(error);
   }
 }

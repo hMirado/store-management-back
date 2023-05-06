@@ -259,15 +259,15 @@ export const createProductWithPrice = async (products: []) => {
     let prices: typeof model.Price[] = [];
 
     for (let product of products) {
-      const productByLabel: typeof model.Product = getProductByLabelOrCode(product['label']);
-      const productByCode: typeof model.Product = getProductByLabelOrCode(product['label']);
+      const productByLabel: typeof model.Product = await getProductByLabelOrCode(product['label']);
+      const productByCode: typeof model.Product = await getProductByLabelOrCode(product['label']);
 
       if (!productByLabel && !productByCode) {
         const newProduct = {
           code: product['code'],
           label: product['label'],
           is_serializabe: product['is_serializabe'],
-          fk_category_id: +product['category'],
+          fk_category_id: +product['fk_category_id'],
         }
         const createdProduct = await createProduct(newProduct, transaction);
         const htPrice = product['price'] * 0.8;
@@ -281,9 +281,11 @@ export const createProductWithPrice = async (products: []) => {
         }
       }
     }
-    const price = await createMuliplePrice(prices, transaction)
+    const price = await createMuliplePrice(prices, transaction);
+    transaction.commit();
     return price ? true : false;
   } catch (error: any) {
+    transaction.rollback();
     console.error("product.service::createProductWithPrice", error);
     throw new Error(error);
   }
