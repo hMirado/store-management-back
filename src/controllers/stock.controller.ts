@@ -8,7 +8,8 @@ import {
   createStockMovment,
   countProductInStock,
   countProductOutStock,
-  addStock
+  addStock,
+  getStockByProductShop
 } from '../services/stock.service'
 import { getShopByUuid } from '../services/shop.service'
 import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.service'
@@ -182,8 +183,7 @@ export const countStock = async (req: Request, res: Response) => {
       out: outStock
     }
 
-    return await res.status(200).json({status: 200, data: result, notification: "Total des stocks"})
-
+    return await res.status(200).json({status: 200, data: result, notification: "Total des stocks"});
   } catch (error: any) {
     console.error("\nstock.controller::countStock", error)
     return await res.status(500).json({ error: error, notification: "Erreur système" });
@@ -209,6 +209,22 @@ export const addStockStockHandler = async (req: Request, res: Response) => {
     return await res.status(201).json({status: 201, data: stock, notification: "Stocks d'article ajoutés"})
   } catch (error: any) {
     console.error("\nstock.controller::createStockHandler", error)
+    return await res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const getStockByProductShopHandler = async (req: Request, res: Response) => {
+  try {
+    const shop: typeof model.Shop = await getShopByUuid(req.params.shop);
+    if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
+
+    const product: typeof model.Product = await getProductByUuid(req.params.product);
+    if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Produit inéxitant'});
+    
+    const stock: typeof model.Stock = await getStockByProductShop(product.product_id, shop.shop_id);
+    return await res.status(200).json({status: 200, data: stock, notification: "Stock retourné."})
+  } catch (error: any) {
+    console.error("\nstock.controller::getStockByProductShopHandler", error)
     return await res.status(500).json({ error: error, notification: "Erreur système" });
   }
 }

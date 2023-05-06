@@ -1,7 +1,12 @@
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
+import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
+import { generateCodeWithDate } from "../helpers/helper";
+import { getProductByUuid } from "./product.service";
+import { updateSerializationTransfer, getSerializationByGroup } from "./serialization.service";
+import { getStockByProductShop, updateStock } from "./stock.service";
 
 export const getTransfertStatusByCode = async (code: string) => {
   try {
@@ -95,23 +100,20 @@ export const getAllTransfer = async (params: any) => {
     }
   }
 
-  const page = (params.page && +params.page > 1) ? +params.page - 1 : 0;
-  const size = params.size ? params.size : 10;
-  const { limit, offset } = getPagination(page, +size);
+
+  
   try {
-    const data = await model.Transfer.findAndCountAll(
+    const page = (params.page && +params.page > 1) ? +params.page - 1 : 0;
+    const size = params.size ? params.size : 10;
+    const { limit, offset } = getPagination(page, +size);  console.log("\npage", page);
+    const transfers: typeof model.Transfer[] =  await model.Transfer.findAndCountAll(
       {
-        attributes: [ "transfer_id", "transfer_uuid", "transfer_quantity", "createdAt", "updatedAt" ],
+        attributes: ['transfer_id', 'transfer_uuid', 'transfer_code', 'createdAt', 'updatedAt'],
         include: [
           {
             model: model.TransferStatus,
             attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"],
             where: statusCondition
-          },
-          {
-            model: model.Product,
-            attributes: ["product_id", "product_uuid", "code", "label"],
-            where: productCondition
           },
           {
             model: model.User,
@@ -141,10 +143,11 @@ export const getAllTransfer = async (params: any) => {
           ['updatedAt', 'DESC']
         ],
       }
-    )
-    return getPagingData(data, +page, 10);
+    );
+    
+    return getPagingData(transfers, +page, 10);
   } catch (error: any) {
-    console.log("\n transfer.service::getAllTransfer");
+    console.log("\n transfer.service::getAllTransfer", error);
     throw new Error(error);
   }
 }
@@ -339,6 +342,144 @@ export const updateTransfer = async (transferId: number, value: any, _transactio
     );
   } catch (error: any) {
     console.log("\n transfer.service::updateTransfer", error);
+    throw new Error(error);
+  }
+}
+
+export const addTransfer = async (user: number, shopSender: number, shopReceiver: number, req: Request) => {
+  const transaction = await sequelize.transaction();
+  let newTransfer: any = {};
+  try {
+    const transferStatus: typeof model.TransfertStatus = await getTransfertStatusByCode('IN_PROGRESS');
+    if (!transferStatus) throw new Error('Transfer status not found.');
+
+    // add new transfer
+    const transferCode = `${generateCodeWithDate()}/${shopSender}/${shopReceiver}`;
+    const transfer: typeof model.Transfer = {
+      transfer_code: transferCode,
+      transfer_commentary: req.body.commentary || null,
+      fk_transfer_status_id: transferStatus.transfer_status_id,
+      fk_user_sender: user,
+      fk_user_receiver: user,
+      fk_shop_sender: shopSender,
+      fk_shop_receiver: shopReceiver,
+    } 
+    const transferCreated = await createTransfer(transfer, transaction);
+    newTransfer.transfer = transferCreated;
+    const transferId = transferCreated.transfer_id;
+
+    // add product to transfer & update serialization is_in_transfer
+    let serializationGroup: string[] = [];
+    let transferSerializations: any[] = [];
+    let productSerializationQuantity: number = 0;
+    let stockUpdateds: any[] = []; 
+
+    let products = await Promise.all(req.body.products.map(async (product: any) => {
+
+      // verify if product is in database
+      const _product: typeof model.Product = await getProductByUuid(product.product_uuid);;
+      if (!_product) throw new Error('Product not found.');
+
+      // verify if quantity is in stock
+      const _stock: typeof model.Stock = await getStockByProductShop(_product.product_id, shopSender);
+      if(!_stock) throw new Error('Product doesn\'t in stock.');
+      if(_stock && _stock.quantity < product['quantity']) throw new Error('Stock of product is less than quantity');
+
+      // update stock quantity
+      const quantity = _stock.quantity - product['quantity']
+      const stockUpdated = await updateStock(quantity, _product.product_id, shopSender, transaction)
+      stockUpdateds.push(stockUpdated)
+
+      if (product['is_serializable']) {
+        productSerializationQuantity += product['quantity']
+        const serialization = await Promise.all(product['serializations'].map(async (serialization: any) => {
+         
+          // verify if serialization is in database and not in transfer actually
+          const _serialization: typeof model.Serialization = await getSerializationByGroup(serialization.group_id);
+          if (!_serialization) throw new Error('Serialization not found.');
+          if (_serialization.is_in_transfer) throw new Error('Serialization is actually in transfer.');
+
+          transferSerializations.push(
+            {
+              transfer_id: transferId,
+              serialization_id: _serialization.serialization_id
+            }
+          );
+          return serialization.group_id;
+        }))
+        serializationGroup = [...serializationGroup, ...serialization]
+      }
+
+      return {
+        transfer_id: transferId,
+        product_id: _product.product_id,
+        quantity: product['quantity']
+      }
+    }));
+
+    // add stock updated to response
+    newTransfer.stockUpdateds = stockUpdateds;
+
+    if (serializationGroup.length != productSerializationQuantity) {
+      throw new Error('Serialization not given.');
+    };
+    
+    newTransfer.products = await model.TransferProduct.bulkCreate(products, { transaction: transaction })
+    newTransfer.serialization = await updateSerializationTransfer(serializationGroup, transferId, transaction);
+    newTransfer.transferSerialization = await model.TransferSerialization.bulkCreate(transferSerializations, { transaction: transaction })
+
+    await transaction.commit();
+    return newTransfer;
+  } catch (error: any) {
+    await transaction.rollback();
+    console.log("\n transfer.service::addTransfer", error);
+    throw new Error(error);
+  }
+}
+
+export const getTransferByUuid = async (uuid: string) => {
+  try {
+    return model.Transfer.findOne(
+      {
+        include: [
+          {
+            model: model.Product
+          },
+          {
+            model: model.Serialization
+          },
+          {
+            model: model.TransferStatus,
+            attributes: ["transfer_status_id", "transfer_status_uuid", "transfer_status_code", "transfer_status_label"]
+          },
+          {
+            model: model.User,
+            as: 'user_sender',
+            attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+          },
+          {
+            model: model.User,
+            as: 'user_receiver',
+            attributes: ["user_id", "user_uuid", "first_name", "last_name"]
+          },
+          {
+            model: model.Shop,
+            as: 'shop_sender',
+            attributes: ["shop_id", "shop_uuid", "shop_name"]
+          },
+          {
+            model: model.Shop,
+            as: 'shop_receiver',
+            attributes: ["shop_id", "shop_uuid", "shop_name"]
+          }
+        ],
+        where: {
+          transfer_uuid: uuid
+        }
+      }
+    )
+  } catch (error: any) {
+    console.log("\n transfer.service::getTransferByUuid", error);
     throw new Error(error);
   }
 }

@@ -16,9 +16,10 @@ export const Transfer = sequelize.define(
 			allowNull: false,
 			unique: "compositeIndex",
 		},
-		transfer_quantity: {
-			type: Sequelize.INTEGER,
+		transfer_code: {
+			type: Sequelize.STRING,
 			allowNull: false,
+			unique: "compositeIndex",
 		},
 		transfer_commentary: {
 			type: Sequelize.TEXT("long"),

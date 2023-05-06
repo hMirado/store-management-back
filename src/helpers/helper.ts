@@ -17,3 +17,15 @@ export const generateUniqueId = () => {
   result += "-" + Math.floor(Math.random() * 1000000000000);
   return result;
 }
+
+export const generateCodeWithDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = ('0'+(now.getMonth() + 1)).slice(-2);
+  const day = now.getDate();
+  let result = "";
+  for (let i = 0; i < 3; i++) {
+    result += String.fromCharCode(97 + Math.floor(Math.random() * 26)).toLocaleUpperCase();
+  };
+  return `${result}/${year}/${month}/${day}`;
+}

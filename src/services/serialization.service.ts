@@ -35,7 +35,7 @@ export const getSerializationByValue = async (value: string, type: number) => {
   }
 }
 
-export const getSerializationByProductShop = async (productId: number, shopId: number, isSold: boolean = false) => {
+export const getSerializationByProductShop = async (productId: number, shopId: number, search: string = '', isSold: boolean = false) => {
   const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
   let query = `
     SELECT ${column} FROM serializations sr
@@ -47,6 +47,7 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
   `;
   try {
     query += shopId > 0 ? ` AND s.shop_id = ${shopId}` : '';
+    query += search != '' ? ` AND sr.serialization_value like '%${search}%'` : '';
     query += ` AND sr.is_sold = ${isSold}`;
     query += ' AND sr.is_in_transfer = false';
     query += ' GROUP BY sr.serialization_id'
@@ -73,6 +74,19 @@ export const getSerializationByProductShop = async (productId: number, shopId: n
   }
 }
 
+export const getSerializationByGroup = async (group: string) => {
+  try {
+    return await model.Serialization.findOne({
+      where: {
+        group_id: group,
+      }
+    });
+  } catch (error: any) {
+    console.log('\nserialization.service::getSerializationByGroup', error);
+    throw new Error(error);
+  }
+}
+
 export const getSerializationByProduct_Type_Value = async (productId: number, type: number, serialization: string) => {
   try {
     return await model.Serialization.findOne({
@@ -89,23 +103,21 @@ export const getSerializationByProduct_Type_Value = async (productId: number, ty
   }
 }
 
-export const updateSerializationTransfer = async (attribute: string, shopId: number, isInTransfer: boolean = false,_transaction: IDBTransaction | any = null) => {
-  const newValue: any = {
-    fk_shop_id: shopId,
-    isInTransfer: isInTransfer
-  }
+export const updateSerializationTransfer = async (groupId: string[], transferId: number, _transaction: IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
-      newValue,
-      { 
-        where: { attribute_serialization: attribute },
-        returning: true
+      {
+        is_in_transfer: 1
       },
-      { transaction: _transaction }
-    )
+      {
+        where: {
+          group_id: { [Op.in]: groupId }
+        },
+       transaction: _transaction 
+      }
+    );
   } catch (error: any) {
-    console.log('\nserialization.service::updateSerializationByAttribute');
-    console.log(error);
+    console.log('\nserialization.service::updateSerializationByAttribute', error);
     throw new Error(error);
   }
 }

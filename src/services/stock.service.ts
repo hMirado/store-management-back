@@ -294,3 +294,40 @@ export const addStock = async (product: typeof model.Product, shopId: number, is
     throw new Error(error);
   }
 }
+
+export const getStockByProductShop = async (productId: number, shopId: number) => {
+  try {
+    return await model.Stock.findOne(
+      {
+        where: {
+          fk_product_id: productId,
+          fk_shop_id: shopId
+        }
+      }
+    );
+  } catch (error: any) {
+    console.log('\nstock.servie::countProductInStock', error);
+    throw new Error(error);
+  }
+}
+
+export const updateStock = async (quantity: number, productId: number, shopId: number, _transaction: IDBTransaction | null = null) => {
+  try {
+    return await model.Stock.update(
+      {
+        quantity: quantity
+      },
+      {
+        where: {
+         fk_product_id: productId,
+         fk_shop_id: shopId
+        },
+        returning: true,
+        transaction: _transaction
+      }
+    )
+  } catch (error: any) {
+    console.log('\nstock.servie::updateStock', error);
+    throw new Error(error);
+  }
+}

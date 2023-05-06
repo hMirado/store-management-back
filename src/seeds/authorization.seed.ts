@@ -147,5 +147,17 @@ module.exports = () => {
       authorization_key: 'PAGE_ELEMENT_CREATE_SHOP',
       authorization_parent: 7
     },
+    // PAGE TRANSFER
+    {
+      // 25
+      authorization_name: "Transfert",
+      authorization_key: "PAGE_TRANSFER"
+    },
+    {
+      // 26
+      authorization_name: "Nouveau transfert d'article",
+      authorization_key: 'PAGE_ELEMENT_CREATE_NEW_TRANSFER',
+      authorization_parent: 25
+    }
   ]).then(() => console.log('Seed Authorization complete'))
 };
