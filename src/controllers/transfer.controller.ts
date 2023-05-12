@@ -37,7 +37,7 @@ export const createTransferHandler = async (req: Request, res: Response) => {
   }
 }
 
-export const validateTransferHandler = async (req: Request, res: Response) => {
+export const validateTransferHandlerOld = async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   const transferUuid: string = req.params.transfer;
   const userUuid: string = req.body.user;
@@ -144,6 +144,32 @@ export const getTransferByUuidHandler = async (req: Request, res: Response) => {
     return await res.status(200).json({status: 200, data: transfer, notification: "Détail du transfert."})
   } catch (error: any) {
     console.log("transfer.controller::getTransferByUuidHandler",error)
-    return res.status(500).json({ error: new Error(error), notification: "Erreur système" });
+    return res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const validateTransferHandler = async (req: Request, res: Response) => {
+  const transferUuid: string = req.params.uuid;
+  const userUuid: string = req.body.user;
+  try {
+    if (!transferUuid || !userUuid) {
+      return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Veuillez renseigner tout les informations.'});
+    }
+    const transfer: typeof model.Transfer = await getTransferByUuid(transferUuid);
+    if (!transfer || transfer.transfer_status.transfer_status_code != status.inProgress)  {
+      return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Le transfert est déja validé ou inexistant.'});
+    }
+
+    const user: typeof model.User = await findUserByUuid(userUuid);
+    if (!user) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Le validateur est inexistant.'});
+
+    const response = {
+      transfer: transfer,
+      user: user
+    }
+    return await res.status(200).json({status: 200, data: response, notification: "Détail du transfert."})
+  } catch (error) {
+    console.log("transfer.controller::getTransferByUuidHandler",error)
+    return res.status(500).json({ error: error, notification: "Erreur système" });
   }
 }

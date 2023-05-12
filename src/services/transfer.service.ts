@@ -6,7 +6,8 @@ import { Op } from "sequelize";
 import { generateCodeWithDate } from "../helpers/helper";
 import { getProductByUuid } from "./product.service";
 import { updateSerializationTransfer, getSerializationByGroup } from "./serialization.service";
-import { getStockByProductShop, updateStock } from "./stock.service";
+import { getStockByProductShop, createStockMovment } from "./stock.service";
+import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 
 export const getTransfertStatusByCode = async (code: string) => {
   try {
@@ -385,10 +386,19 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
       if(!_stock) throw new Error('Product doesn\'t in stock.');
       if(_stock && _stock.quantity < product['quantity']) throw new Error('Stock of product is less than quantity');
 
-      // update stock quantity
-      const quantity = _stock.quantity - product['quantity']
-      const stockUpdated = await updateStock(quantity, _product.product_id, shopSender, transaction)
-      stockUpdateds.push(stockUpdated)
+      // add stock movment and update stock
+      const quantity = product['quantity'];
+      const stockMovmentType = await getStockMovmentTypeByMovment('OUT-TRANSFER');   
+      const stockMovement: typeof model.StockMovment = {
+        quantity: quantity,
+        fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
+        fk_product_id: _product.product_id,
+        fk_shop_id: shopSender
+      }; 
+
+      const stockUpdated = await createStockMovment([stockMovement], transaction)
+      console.log("\nmove", stockUpdated);
+      stockUpdateds.push(stockUpdated);
 
       if (product['is_serializable']) {
         productSerializationQuantity += product['quantity']

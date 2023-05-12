@@ -195,8 +195,7 @@ export const createStockMovment = async (stockMovments: typeof model.StockMovmen
   try {
     return await model.StockMovment.bulkCreate(stockMovments, { transaction: _transaction });
   } catch (error: any) {
-    console.log('\nstock.servie::createStockMovment');
-    console.log(error);
+    console.log('\nstock.servie::createStockMovment', error);
     throw new Error(error);
   }
 }
@@ -256,18 +255,6 @@ export const addStock = async (product: typeof model.Product, shopId: number, is
       fk_shop_id: shopId
     }];
     stockImported.movment = await createStockMovment(stockMovment, transaction);
-
-    if (!_stock['isExist']) {
-      const stock = {
-        quantity: req.body.quantity,
-        fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
-        fk_shop_id: shopId,
-        fk_product_id: product.product_id
-      }
-      stockImported.stock = await createStock(stock, transaction);
-    } else {
-      stockImported.stock = await editStock(quantity + _stock['quantity'], _stock['stockId'], transaction);
-    }
 
     if (isSerializable) {
       const formatedSerialization = serializations.map((serialization: any) => {
