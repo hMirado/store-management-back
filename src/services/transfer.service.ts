@@ -5,7 +5,7 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
 import { generateCodeWithDate } from "../helpers/helper";
 import { getProductByUuid } from "./product.service";
-import { updateSerializationTransfer, getSerializationByGroup } from "./serialization.service";
+import { updateSerializationInTransfer, getSerializationByGroup } from "./serialization.service";
 import { getStockByProductShop, createStockMovment } from "./stock.service";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 
@@ -100,8 +100,6 @@ export const getAllTransfer = async (params: any) => {
       ]
     }
   }
-
-
   
   try {
     const page = (params.page && +params.page > 1) ? +params.page - 1 : 0;
@@ -329,24 +327,6 @@ export const updateIsInTransferSerializationTransfer = async (shop: number, prod
   }
 }
 
-export const updateTransfer = async (transferId: number, value: any, _transaction: IDBTransaction) => {
-  try {
-    return await model.Transfer.update(
-      value,
-      {
-        where: {
-          transfer_id: transferId,
-        },
-        returning: true
-      },
-      {transaction: _transaction}
-    );
-  } catch (error: any) {
-    console.log("\n transfer.service::updateTransfer", error);
-    throw new Error(error);
-  }
-}
-
 export const addTransfer = async (user: number, shopSender: number, shopReceiver: number, req: Request) => {
   const transaction = await sequelize.transaction();
   let newTransfer: any = {};
@@ -395,9 +375,7 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
         fk_product_id: _product.product_id,
         fk_shop_id: shopSender
       }; 
-
       const stockUpdated = await createStockMovment([stockMovement], transaction)
-      console.log("\nmove", stockUpdated);
       stockUpdateds.push(stockUpdated);
 
       if (product['is_serializable']) {
@@ -435,7 +413,7 @@ export const addTransfer = async (user: number, shopSender: number, shopReceiver
     };
     
     newTransfer.products = await model.TransferProduct.bulkCreate(products, { transaction: transaction })
-    newTransfer.serialization = await updateSerializationTransfer(serializationGroup, transferId, transaction);
+    newTransfer.serialization = await updateSerializationInTransfer(serializationGroup, transferId, transaction);
     newTransfer.transferSerialization = await model.TransferSerialization.bulkCreate(transferSerializations, { transaction: transaction })
 
     await transaction.commit();
@@ -490,6 +468,72 @@ export const getTransferByUuid = async (uuid: string) => {
     )
   } catch (error: any) {
     console.log("\n transfer.service::getTransferByUuid", error);
+    throw new Error(error);
+  }
+}
+
+export const validateTransfer = async (transferUuid: string, validator: number, commentary: string = '') => {
+  const transaction = await sequelize.transaction();
+  try {
+    const transfer: typeof model.Transfer = await getTransferByUuid(transferUuid);
+    const status: typeof model.TransferStatus = await getTransfertStatusByCode('VALIDATED');
+    //const isUpdated: typeof model.Transfer = await updateTransfer(transferUuid, status.transfer_status_id, validator, commentary, transaction);
+    
+    const products = transfer.products.map((product: typeof model.Product) => {
+      return {
+        productId: product.product_id,
+        isSerializable: product.is_serializable,
+        quantity: product.transfer_product.quantity
+      }
+    });
+
+    const stockMovmentType = await getStockMovmentTypeByMovment('IN-TRANSFER');
+    let stockMovements: typeof model.StockMovment[] = []
+    let serializations: any[] = [];
+    for (let product of products) {
+      const stockMovement: typeof model.StockMovment = {
+        quantity: product.quantity,
+        fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
+        fk_product_id: product.product_id,
+        fk_shop_id: transfer.fk_shop_receiver
+      };
+      stockMovements.push(stockMovement);
+      if (product.isSerializable) {
+        serializations.push({is_in_transfer: false, fk_product_id: product.product_id, fk_shop_id: transfer.fk_shop_receiver})
+      }
+    }
+    console.log("\stockMovements", stockMovements);
+    const stockUpdated = await createStockMovment([stockMovements], transaction)
+    console.log("\serializations", serializations);
+    
+    
+    return transfer.products;
+  } catch (error: any) {
+    await transaction.rollback();
+    console.log("\n transfer.service::validateTransferHandler", error);
+    throw new Error(error);
+  }
+}
+
+const updateTransfer = async(transferUuid: string, status: number, user: number, commentary: string = '', _transaction: IDBTransaction | any = null) => {
+  try {
+    const newValue = {
+      commentary: commentary != '' ? commentary : null,
+      fk_transfer_status_id: status,
+      fk_user_receiver: user
+    }
+    return await model.Transfer.update(
+      newValue,
+      {
+        where: {
+          transfer_uuid: transferUuid,
+        },
+        returning: true
+      },
+      {transaction: _transaction}
+    );
+  } catch (error: any) {
+    console.log("\n transfer.service::updateTransfer", error);
     throw new Error(error);
   }
 }

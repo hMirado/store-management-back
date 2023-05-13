@@ -5,9 +5,9 @@ import {
   getTransferByUuidByShop,
   getTransfer,
   updateIsInTransferSerializationTransfer,
-  updateTransfer,
   addTransfer,
-  getTransferByUuid
+  getTransferByUuid,
+  validateTransfer
 } from "../services/transfer.service";
 import { getShopByUuid } from '../services/shop.service';
 import { findUserByUuid } from "../services/user.service";
@@ -99,8 +99,8 @@ export const validateTransferHandlerOld = async (req: Request, res: Response) =>
       fk_user_receiver: userReceiver.user_id,
       fk_transfer_status_id: transferStatus.transfer_status_id
     }
-    const editedTransfer: typeof model.Transfer = await updateTransfer(transfer.transfer_id, transferValue, transaction);
-    newTransfert.transfer = editedTransfer;
+    // const editedTransfer: typeof model.Transfer = await updateTransfer(transfer.transfer_id, transferValue, transaction);
+    // newTransfert.transfer = editedTransfer;
 
     await transaction.commit();
     return await res.status(201).json({status: 200, data: newTransfert, notification: "Transfert de stock crée."})
@@ -149,10 +149,11 @@ export const getTransferByUuidHandler = async (req: Request, res: Response) => {
 }
 
 export const validateTransferHandler = async (req: Request, res: Response) => {
-  const transferUuid: string = req.params.uuid;
-  const userUuid: string = req.body.user;
+  const transferUuid: string = req.body.transfer;
+  const validator: string = req.body.user;
+  const commentary: string = req.body.commentary;
   try {
-    if (!transferUuid || !userUuid) {
+    if (!transferUuid || !validator) {
       return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Veuillez renseigner tout les informations.'});
     }
     const transfer: typeof model.Transfer = await getTransferByUuid(transferUuid);
@@ -160,13 +161,10 @@ export const validateTransferHandler = async (req: Request, res: Response) => {
       return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Le transfert est déja validé ou inexistant.'});
     }
 
-    const user: typeof model.User = await findUserByUuid(userUuid);
+    const user: typeof model.User = await findUserByUuid(validator);
     if (!user) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Le validateur est inexistant.'});
 
-    const response = {
-      transfer: transfer,
-      user: user
-    }
+    const response = await validateTransfer(transferUuid, user.user_id, commentary)
     return await res.status(200).json({status: 200, data: response, notification: "Détail du transfert."})
   } catch (error) {
     console.log("transfer.controller::getTransferByUuidHandler",error)

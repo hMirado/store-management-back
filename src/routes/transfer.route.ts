@@ -5,7 +5,7 @@ import { verifyToken } from "../middlewares/auth";
 transferRouter.post('/', verifyToken, createTransferHandler);
 transferRouter.get('/', verifyToken, getAllTransferHandler);
 transferRouter.get('/:uuid', verifyToken, getTransferByUuidHandler);
-transferRouter.put('/validate/:uuid', verifyToken, validateTransferHandler);
+transferRouter.put('/validate', verifyToken, validateTransferHandler);
 transferRouter.get('/:transfer/shop/:shop', verifyToken, getTransferByUuidByShopHandler);
 
 module.exports = transferRouter;

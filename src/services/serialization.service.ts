@@ -103,7 +103,7 @@ export const getSerializationByProduct_Type_Value = async (productId: number, ty
   }
 }
 
-export const updateSerializationTransfer = async (groupId: string[], transferId: number, _transaction: IDBTransaction | null = null) => {
+export const updateSerializationInTransfer = async (groupId: string[], transferId: number, _transaction: IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
       {
@@ -116,6 +116,17 @@ export const updateSerializationTransfer = async (groupId: string[], transferId:
        transaction: _transaction 
       }
     );
+  } catch (error: any) {
+    console.log('\nserialization.service::updateSerializationByAttribute', error);
+    throw new Error(error);
+  }
+}
+
+export const updateSerialization = async () => {
+  try {
+    return await model.Serialization.update(
+      
+    )
   } catch (error: any) {
     console.log('\nserialization.service::updateSerializationByAttribute', error);
     throw new Error(error);
