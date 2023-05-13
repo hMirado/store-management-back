@@ -266,7 +266,7 @@ export const createProductWithPrice = async (products: []) => {
         const newProduct = {
           code: product['code'],
           label: product['label'],
-          is_serializabe: product['is_serializabe'],
+          is_serializable: product['is_serializable'],
           fk_category_id: +product['fk_category_id'],
         }
         const createdProduct = await createProduct(newProduct, transaction);

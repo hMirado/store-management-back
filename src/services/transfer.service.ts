@@ -5,9 +5,10 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
 import { generateCodeWithDate } from "../helpers/helper";
 import { getProductByUuid } from "./product.service";
-import { updateSerializationInTransfer, getSerializationByGroup } from "./serialization.service";
+import { updateSerializationInTransfer, getSerializationByGroup, updateSerializationShop } from "./serialization.service";
 import { getStockByProductShop, createStockMovment } from "./stock.service";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
+import { Serialization } from "models/serialization.model";
 
 export const getTransfertStatusByCode = async (code: string) => {
   try {
@@ -474,22 +475,24 @@ export const getTransferByUuid = async (uuid: string) => {
 
 export const validateTransfer = async (transferUuid: string, validator: number, commentary: string = '') => {
   const transaction = await sequelize.transaction();
+  let transferUpdate: any = {}
   try {
     const transfer: typeof model.Transfer = await getTransferByUuid(transferUuid);
     const status: typeof model.TransferStatus = await getTransfertStatusByCode('VALIDATED');
-    //const isUpdated: typeof model.Transfer = await updateTransfer(transferUuid, status.transfer_status_id, validator, commentary, transaction);
-    
+    const isUpdated: typeof model.Transfer = await updateTransfer(transferUuid, status.transfer_status_id, validator, commentary, transaction);
+    transferUpdate.update = isUpdated;
+
     const products = transfer.products.map((product: typeof model.Product) => {
       return {
-        productId: product.product_id,
-        isSerializable: product.is_serializable,
+        product_id: product.product_id,
         quantity: product.transfer_product.quantity
       }
     });
 
+    // add stock movement and stock
     const stockMovmentType = await getStockMovmentTypeByMovment('IN-TRANSFER');
+
     let stockMovements: typeof model.StockMovment[] = []
-    let serializations: any[] = [];
     for (let product of products) {
       const stockMovement: typeof model.StockMovment = {
         quantity: product.quantity,
@@ -498,16 +501,22 @@ export const validateTransfer = async (transferUuid: string, validator: number, 
         fk_shop_id: transfer.fk_shop_receiver
       };
       stockMovements.push(stockMovement);
-      if (product.isSerializable) {
-        serializations.push({is_in_transfer: false, fk_product_id: product.product_id, fk_shop_id: transfer.fk_shop_receiver})
-      }
     }
-    console.log("\stockMovements", stockMovements);
-    const stockUpdated = await createStockMovment([stockMovements], transaction)
-    console.log("\serializations", serializations);
+    const stockUpdated = await createStockMovment(stockMovements, transaction)
+    transferUpdate.stock = stockUpdated;
+
+    // update serialization
+    if (transfer.serializations && transfer.serializations.length > 0) {
+      const serializationGroup = transfer.serializations.map((serialization: typeof Serialization) => {
+        return serialization.group_id
+      })
+
+      const serialization = await updateSerializationShop(serializationGroup, transfer.fk_shop_receiver, transaction);
+      transferUpdate.serialization = serialization;
+    }
     
-    
-    return transfer.products;
+    transaction.commit();
+    return transferUpdate;
   } catch (error: any) {
     await transaction.rollback();
     console.log("\n transfer.service::validateTransferHandler", error);

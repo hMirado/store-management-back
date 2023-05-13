@@ -122,10 +122,19 @@ export const updateSerializationInTransfer = async (groupId: string[], transferI
   }
 }
 
-export const updateSerialization = async () => {
+export const updateSerializationShop = async (groupId: string[], shop: number, _transaction: IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
-      
+      {
+        is_in_transfer: 0,
+        fk_shop_id: shop,
+      },
+      {
+        where: {
+          group_id: { [Op.in]: groupId }
+        },
+       transaction: _transaction 
+      }
     )
   } catch (error: any) {
     console.log('\nserialization.service::updateSerializationByAttribute', error);
