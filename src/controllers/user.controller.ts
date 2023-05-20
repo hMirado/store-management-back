@@ -12,7 +12,8 @@ import {
   countUser,
   updateUser,
   queryFindUserWithShop,
-  resetPassword
+  resetPassword,
+  updatePassword
 } from "../services/user.service";
 import { User } from "../models/user.model";
 import { Shop } from "../models/shop.model";
@@ -21,7 +22,6 @@ import { generateId } from "../helpers/helper";
 import { getShopById, getShopByUuid } from "../services/shop.service";
 import { UserShop } from "models/user-shop.model";
 import { getRoleByUuid } from "../services/role.service";
-const jwt = require("jsonwebtoken");
 
 export const createUserHandler = async (req: IGetUserAuthInfoRequest, res: Response) => {
   const { first_name, last_name, email, phone_number, fk_role_id } = req.body;
@@ -178,6 +178,20 @@ export const resetPasswordHandller = async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({ status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistant.'});
     const response = await resetPassword(uuid);
     return res.status(201).json({status: 201, data: response, notification: 'Mots de passe reinitialiser.'});
+  } catch (error: any) {
+    return res.status(500).json({ body: error, notification: "Erreur système" })
+  }
+}
+
+export const updatePasswordHandller = async (req: Request, res: Response) => {
+  const uuid: string = req.body.uuid;
+  const password: string = req.body.password;
+  try {
+    if (!uuid) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistante.'});
+    const user: typeof User = await findUserByUuid(uuid);
+    if (!user) return res.status(404).json({ status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistant.'});
+    const response = await updatePassword(uuid, password);
+    return res.status(201).json({status: 201, data: response, notification: 'Mots de passe modifier.'});
   } catch (error: any) {
     return res.status(500).json({ body: error, notification: "Erreur système" })
   }

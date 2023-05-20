@@ -7,7 +7,8 @@ import {
   countUserHandler, 
   updateUserHandler, 
   findUserUserWithShopHandler,
-  resetPasswordHandller
+  resetPasswordHandller,
+  updatePasswordHandller
 } from '../controllers/user.controller';
 const router  = require('express').Router();
 import { verifyToken } from "../middlewares/auth";
@@ -20,6 +21,7 @@ router.get('/', verifyToken, findAllUserHander);
 router.get('/statistic/count', verifyToken, countUserHandler);
 router.put('/update', verifyToken, updateUserHandler);
 router.get('/:uuid/shop', verifyToken, findUserUserWithShopHandler);
-router.put('/:uuid/reset-password', verifyToken, resetPasswordHandller); // password >>  lqKsyTzUh3QX
+router.put('/:uuid/reset-password', verifyToken, resetPasswordHandller);
+router.put('/update-password', updatePasswordHandller);
 
 module.exports = router;

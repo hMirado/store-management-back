@@ -35,7 +35,7 @@ export const User = sequelize.define("user",
       type: Sequelize.STRING,
       allowNull: false,
     },
-    status: {
+    is_new: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
       defaultValue: true

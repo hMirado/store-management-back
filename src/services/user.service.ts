@@ -369,10 +369,11 @@ export const resetPassword = async (userUuid: string) => {
   const newPassword: string = generateId();
   const encryptedPassword = await bcrypt.hash(newPassword, 10);
   try {
-    const isReseted =  await User.update(
+    const isReseted = await User.update(
       {
         password: encryptedPassword,
-        token: null
+        token: null,
+        is_new: true
       },
       {
         where: {
@@ -382,8 +383,27 @@ export const resetPassword = async (userUuid: string) => {
     )
     return { newPassword: newPassword, isReseted: isReseted[0] };
   } catch (error: any) {
-    console.log("\n user.service::resetPassword");
-    console.log(error);
+    console.log("\n user.service::resetPassword", error);
+    throw new Error(error);
+  }
+}
+
+export const updatePassword = async (userUuid: string, password: string) => {
+  const encryptedPassword = await bcrypt.hash(password, 10);
+  try {
+    return await User.update(
+      {
+        password: encryptedPassword,
+        is_new: false
+      },
+      {
+        where: {
+          user_uuid: userUuid
+        }
+      }
+    )
+  } catch (error: any) {
+    console.log("\n user.service::resetPassword", error);
     throw new Error(error);
   }
 }
