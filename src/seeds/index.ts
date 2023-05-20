@@ -31,7 +31,7 @@ module.exports = () => {
   ]).then(() => {
     [
       ShopSeed(),
-      ProductSeed(),
+      //ProductSeed(),
       authorizationRoleAdminSeed()
     ];
   }).then(() => {

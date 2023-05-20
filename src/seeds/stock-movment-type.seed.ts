@@ -10,19 +10,14 @@ module.exports = () => {
             description: 'Ajout/Import d\'un article en stock'
         },
         {
-            movment: 'IN-TRANSFER-ACCEPTED',
-            label: 'Réception de stock accepté',
-            description: 'Entré de stock accepté après un transfert/reception depuis un autre boutique'
-        },
-        {
-            movment: 'IN-TRANSFER-CANCELLED',
-            label: 'Réception de stock annulé',
-            description: 'Entré de stock annulé après un transfert/reception depuis un autre boutique'
+            movment: 'IN-TRANSFER',
+            label: 'Transfert d\'article',
+            description: 'Entré de stock d\'article après transfert entre deux shops'
         },
         {
             movment: 'OUT-TRANSFER',
-            label: 'Sortie de stock',
-            description: 'Sortie de stock suite à un transfert/envoi vers un autre boutique'
+            label: 'Transfert d\'article',
+            description: 'Sorti de stock d\'article après transfert entre deux shops'
         },
         {
             movment: 'OUT-SELL',

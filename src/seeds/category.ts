@@ -3,7 +3,7 @@ const Category = require("../models/category.model");
 module.exports = () => {
 	return Category.bulkCreate([
 		{
-      code: 'ACCES',
+      code: 'ACC',
 			label: "Accessoire",
 		},
 		{

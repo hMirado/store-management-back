@@ -20,8 +20,8 @@ productRouter.get('/sale/:shopUuid', verifyToken, getSaleProductsHandler);
 productRouter.get('/detail/:uuid', verifyToken, getProductByUuidHandler);
 productRouter.get('/verify-label', verifyToken, getProductByLabelOrCodeHandler);
 productRouter.get('/count', verifyToken, countProductHandler);
-productRouter.post('/', verifyToken, createProductHandler);
-productRouter.post('/create', verifyToken, createProductWithPriceHandler);
+//productRouter.post('/', verifyToken, createProductHandler);
+productRouter.post('/', verifyToken, createProductWithPriceHandler);
 productRouter.put('/', verifyToken, updateProductHandler);
 
 module.exports = productRouter;

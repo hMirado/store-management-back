@@ -3,9 +3,9 @@ import { createTransferHandler, getAllTransferHandler, getTransferByUuidByShopHa
 import { verifyToken } from "../middlewares/auth";
 
 transferRouter.post('/', verifyToken, createTransferHandler);
-transferRouter.post('/:transfer/validate/', verifyToken, validateTransferHandler);
 transferRouter.get('/', verifyToken, getAllTransferHandler);
 transferRouter.get('/:uuid', verifyToken, getTransferByUuidHandler);
+transferRouter.put('/validate', verifyToken, validateTransferHandler);
 transferRouter.get('/:transfer/shop/:shop', verifyToken, getTransferByUuidByShopHandler);
 
 module.exports = transferRouter;
