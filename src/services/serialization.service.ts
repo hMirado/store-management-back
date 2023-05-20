@@ -1,5 +1,5 @@
 const model = require("../models/index");
-import { HasMany, Op, QueryTypes } from "sequelize"
+import { Op, QueryTypes } from "sequelize"
 const sequelize = require("../config/db.config");
 
 export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: IDBTransaction | any = null) => {
@@ -81,6 +81,38 @@ export const getSerializationByGroup = async (group: string) => {
         group_id: group,
       }
     });
+  } catch (error: any) {
+    console.log('\nserialization.service::getSerializationByGroup', error);
+    throw new Error(error);
+  }
+}
+
+export const findAllSerializationByGroup = async (groups: string[]) => {
+  try {
+    const serializations =  await model.Serialization.findAll({
+      include: model.SerializationType,
+      where: {
+        group_id: {
+          [Op.in]: groups
+        },
+      }
+    });
+
+    let groupedSerialization: any = {};
+    for (const obj of serializations) {
+      if (!groupedSerialization[obj.group_id]) {
+        groupedSerialization[obj.group_id] = [];
+      }
+      
+      groupedSerialization[obj.group_id].push(obj);
+    }
+    /*serializations.forEach((serialization: typeof model.Serialization) => {
+      const {group_id} = serialization;
+      if (groupedSerialization[group_id]) groupedSerialization[group_id].push(serialization);
+      else groupedSerialization[group_id] = serialization;
+    });*/
+
+    return Object.values(groupedSerialization);
   } catch (error: any) {
     console.log('\nserialization.service::getSerializationByGroup', error);
     throw new Error(error);

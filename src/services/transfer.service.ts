@@ -527,7 +527,7 @@ export const validateTransfer = async (transferUuid: string, validator: number, 
 const updateTransfer = async(transferUuid: string, status: number, user: number, commentary: string = '', _transaction: IDBTransaction | any = null) => {
   try {
     const newValue = {
-      commentary: commentary != '' ? commentary : null,
+      transfer_commentary: commentary != '' ? commentary : null,
       fk_transfer_status_id: status,
       fk_user_receiver: user
     }

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { getShopByUuid } from '../services/shop.service';
 import { getProductByUuid } from "../services/product.service";
-import { getSerializationByProductShop, getSerializationByProduct_Type_Value } from "../services/serialization.service";
+import { getSerializationByProductShop, getSerializationByProduct_Type_Value, findAllSerializationByGroup } from "../services/serialization.service";
 import { getSerializationTypeById } from "../services/seriliazation-type.service";
 
 export const getSerializationByProductShopHanlder = async (req: Request, res: Response) => {
@@ -36,6 +36,17 @@ export const getSerializationByProduct_Type_ValueHandler = async (req: Request, 
     if (!product) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Type de sérialisation inconnu.'});
 
     const serialization = await getSerializationByProduct_Type_Value(product.product_id, type.serialization_type_id, value);
+    return await res.status(200).json({status: 200, data: serialization, notification: `Numéro de série récupéré.`})
+  } catch (error: any) {
+    return res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const getAllSerializationByGroupHandler = async (req: Request, res: Response) => {
+  const group = req.query.group as string[];
+  try {
+    if (group.length == 0) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Renseignement invalide.'});
+    const serialization = await findAllSerializationByGroup(group);
     return await res.status(200).json({status: 200, data: serialization, notification: `Numéro de série récupéré.`})
   } catch (error: any) {
     return res.status(500).json({ error: error, notification: "Erreur système" });
