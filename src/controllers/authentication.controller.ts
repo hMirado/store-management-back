@@ -8,7 +8,7 @@ export const loginHandler = async (req: Request, res: Response) => {
     const { emailOrPhoneNumber, password } = req.body;
 
     const user: typeof User = await findUserByEmailOrPhoneNumber(emailOrPhoneNumber);
-    if (!user) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'L\'utilisateur est inexistante.'});
+    if (!user) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Numéro télephone invalide.'});
 
     const token = await login(user, password);
     delete user.password;
