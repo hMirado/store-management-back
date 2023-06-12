@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getShopByStatus } from "../services/shop.service";
+import { getShopByStatus, getShopByUuid, openShop } from "../services/shop.service";
 const model = require("../models/index");
 
 /**
@@ -136,11 +136,26 @@ module.exports.deleteShop =async (req: Request, res: Response) => {
 	}
 }
 
-export const getShopByStatusHandler =async (req: Request, res: Response) => {
+export const getShopByStatusHandler = async (req: Request, res: Response) => {
 	const status = req.query.status as string
 	try {
 		const shop: typeof model.Shop = await getShopByStatus(Boolean(status))
 		return res.status(200).json({ status: 200, data: shop, notification: 'Liste des boutiques.'});
+	} catch (error) {
+		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système'});
+	}
+}
+
+export const openShopHandler = async (req: Request, res: Response) => {
+	try {
+		const shopUuid = req.params.uuid;
+		const status = req.body.status;
+		const notification = status ? 'ouvert' : 'fermé';
+		const shop: typeof model.Shop = await getShopByUuid(shopUuid);
+		if (!shop)  return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
+		if (shop && shop.is_opened == status) return res.status(200).json({ status: 200, data: shop, notification: `shop déjà ${notification}`});
+		const update = await openShop(shopUuid, status); 
+		return res.status(201).json({status: 201, data: {status: update}, notification: `shop ${notification}`});
 	} catch (error) {
 		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système'});
 	}

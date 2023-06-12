@@ -80,7 +80,7 @@ module.exports = () => {
     // STOCK
     {
       // 14
-      authorization_name: "Ajout de stock",
+      authorization_name: "Ajouter un article stock",
       authorization_key: 'PAGE_ELEMENT_STOCK_ADD',
       authorization_parent: 3
     },
@@ -92,8 +92,8 @@ module.exports = () => {
     },
     {
       // 16
-      authorization_name: "Transfert de stock",
-      authorization_key: 'PAGE_ELEMENT_STOCK_TRANSFER',
+      authorization_name: "Transferer d'articles",
+      authorization_key: 'PAGE_ELEMENT_TRANSFER_ITEM',
       authorization_parent: 3
     },
     // USER
@@ -158,6 +158,19 @@ module.exports = () => {
       authorization_name: "Nouveau transfert d'article",
       authorization_key: 'PAGE_ELEMENT_CREATE_NEW_TRANSFER',
       authorization_parent: 25
+    },
+    // SHOP
+    {
+      // 27
+      authorization_name: "Action sur plusieur shop",
+      authorization_key: 'PAGE_ELEMENT_MULTIPLE_SHOP',
+      authorization_parent: 7
+    },
+    {
+      // 28
+      authorization_name: "Action sur un shop",
+      authorization_key: 'PAGE_ELEMENT_SINGLE_SHOP',
+      authorization_parent: 7
     }
   ]).then(() => console.log('Seed Authorization complete'))
 };

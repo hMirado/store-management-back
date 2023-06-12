@@ -40,8 +40,11 @@ export const Shop = sequelize.define(
 			allowNull: false,
 			defaultValue: true,
 		},
-		createdAt: Sequelize.DATE,
-		updatedAt: Sequelize.DATE,
+		is_opened: {
+			type: Sequelize.BOOLEAN,
+			allowNull: false,
+			defaultValue: false,
+		}
 	},
 	{
 		paranoid: true,

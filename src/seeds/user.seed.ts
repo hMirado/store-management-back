@@ -12,8 +12,8 @@ import { User } from "../models/user.model";
       "fk_role_id": 1
     },
     {
-      "first_name": "RANDRIA",
-      "last_name": "Jenny",
+      "first_name": "Jenny",
+      "last_name": "RANDRIANARISOA",
       "email": "jenny@yopmail.com",
       "phone_number": "0331204642",
       "password": "1234567890",
@@ -52,8 +52,8 @@ export const mirado = async () => {
 
 export const jenny = async () => {
   const {first_name, last_name, email, phone_number, password, fk_role_id} = {
-    "first_name": "RANDRIA",
-    "last_name": "Jenny",
+    "first_name": "Jenny",
+    "last_name": "RANDRIANARISOA",
     "email": "jenny@yopmail.com",
     "phone_number": "0331204642",
     "password": "1234567890",
