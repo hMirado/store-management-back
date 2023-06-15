@@ -20,6 +20,7 @@ import { TransferType } from './transfer-type.model';
 import { UserShop } from './user-shop.model';
 import { TransferProduct } from './transfer-product.model';
 import { TransferSerialization } from './transfer-serialization.model';
+import { CashRegister } from './cash-register.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -548,6 +549,21 @@ Transfer.belongsTo(Shop, {
 });
 
 
+//shop & cash register
+Shop.hasMany(CashRegister, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+CashRegister.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
 
 module.exports = { 
   Company, 
@@ -570,5 +586,6 @@ module.exports = {
   Transfer,
   TransferType,
   TransferProduct,
-  TransferSerialization
+  TransferSerialization,
+  CashRegister
 };

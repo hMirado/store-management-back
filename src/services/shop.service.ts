@@ -38,3 +38,21 @@ export const getShop = async () => {
     throw new Error(error);
   }
 }
+
+export const openShop = async (shopUuid: string, status: boolean) => {
+  try {
+    await model.Shop.update(
+      {
+        is_opened: status
+      },
+      {
+        where: { shop_uuid: shopUuid }
+      }
+    );
+
+    return await getShopByUuid(shopUuid)
+  } catch (error: any) {
+    console.error('shop.service::openShop', error)
+    throw new Error(error);
+  }
+}

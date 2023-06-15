@@ -29,6 +29,7 @@ module.exports = () => {
     { role_id: 1, authorization_id: 24 },
     { role_id: 1, authorization_id: 25 },
     { role_id: 1, authorization_id: 26 },
+    { role_id: 1, authorization_id: 27 },
 
     // SELLER
     { role_id: 2, authorization_id: 1 },
@@ -38,5 +39,6 @@ module.exports = () => {
     { role_id: 2, authorization_id: 16 },
     { role_id: 2, authorization_id: 25 },
     { role_id: 2, authorization_id: 26 },
+    { role_id: 2, authorization_id: 28 },
   ]).then(() => console.log('Seed Authorization - Role completed.'))
 };
