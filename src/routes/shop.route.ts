@@ -10,6 +10,6 @@ shopRouter.put('/:uuid', verifyToken, shopController.updateShop);
 shopRouter.put('/:uuid/status', verifyToken, shopController.updateShopStatus);
 shopRouter.delete('/:uuid', verifyToken, shopController.deleteShop);
 shopRouter.get('/status', verifyToken, getShopByStatusHandler);
-shopRouter.put('/open/:uuid', verifyToken, openShopHandler)
+shopRouter.put('/open/:uuid', verifyToken, openShopHandler);
 
 module.exports = shopRouter;

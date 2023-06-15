@@ -2,7 +2,7 @@ const model = require("../models/index");
 const { Op } = require("sequelize");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
-import { getShop } from "./shop.service";
+import { getShops } from "./shop.service";
 import { createMuliplePrice } from "./price.service";
 const sequelize = require("../config/db.config");
 
@@ -253,7 +253,7 @@ export const createProduct = async (product: typeof model.Product, transaction: 
 export const createProductWithPrice = async (products: []) => {
   const transaction = await sequelize.transaction();
   try {
-    const shops: typeof model.Shop[] = await getShop();
+    const shops: typeof model.Shop[] = await getShops();
     const shopIds = shops.map((shop: typeof model.Shop) => shop.shop_id);
 
     let prices: typeof model.Price[] = [];

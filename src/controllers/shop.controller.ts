@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getShopByStatus, getShopByUuid, openShop } from "../services/shop.service";
+import { getShops, getShopByStatus, getShopByUuid, openShop } from "../services/shop.service";
 const model = require("../models/index");
 
 /**
@@ -7,9 +7,7 @@ const model = require("../models/index");
  */
 module.exports.getShops = async (req: Request, res: Response) => {
 	try {
-		const shops: typeof model.Shop[] = await model.Shop.findAll({
-			include: model.Company,
-		});
+		const shops: typeof model.Shop[] = await getShops(req);
 		return res.status(200).json({status: 200, data: shops, notification: 'Listes des boutiques'});
 	} catch (error) {
 		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système' });

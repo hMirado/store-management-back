@@ -1,3 +1,5 @@
+import { Request } from "express";
+import { Op } from "sequelize";
 const model = require("../models/index");
 
 export const getShopByUuid = async (uuid: string) => {
@@ -30,9 +32,18 @@ export const getShopByStatus = async (status: boolean) => {
   }
 }
 
-export const getShop = async () => {
+export const getShops = async (req: Request | null = null) => {
+  let conditions: any = {};
+  if (req?.query.open) {
+    conditions['is_opened'] = req.query.open
+  }
   try {
-    return await model.Shop.findAll();
+    return await model.Shop.findAll(
+      {
+        include: model.Company,
+        where: conditions
+      }
+    );
   } catch (error: any) {
     console.error('shop.service::getShop', error)
     throw new Error(error);
