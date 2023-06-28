@@ -24,6 +24,7 @@ import { CashRegister } from './cash-register.model';
 import { Payment } from './payment.model';
 import { Cart } from './cart.model';
 import { CartProduct } from './cart-product.model';
+import { Sale } from './sale.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -661,6 +662,52 @@ Cart.belongsToMany(
 );
 
 
+/**
+ * @summary: Sale & seller & shop & product
+ */
+Product.hasMany(Sale, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  sourceKey: "product_id"
+});
+Sale.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id"
+});
+Shop.hasMany(Sale, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Sale.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+User.hasMany(Sale, {
+  foreignKey: {
+    name: "fk_user_id",
+    allowNull: false
+  },
+  sourceKey: "user_id"
+});
+Sale.belongsTo(User, {
+  foreignKey: {
+    name: "fk_user_id",
+    allowNull: false
+  },
+  targetKey: "user_id"
+});
+
 
 module.exports = { 
   Company, 
@@ -687,5 +734,6 @@ module.exports = {
   CashRegister,
   Payment,
   Cart,
-  CartProduct
+  CartProduct,
+  Sale
 };

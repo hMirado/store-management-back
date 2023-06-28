@@ -173,3 +173,23 @@ export const updateSerializationShop = async (groupId: string[], shop: number, _
     throw new Error(error);
   }
 }
+
+
+export const updateSerializationIsSold = async (value: boolean = true, groupId: string[], _transaction: IDBTransaction | null = null) => {
+  try {
+    return await model.Serialization.update(
+      {
+        is_sold: value
+      },
+      {
+        where: {
+          group_id: { [Op.in]: groupId }
+        },
+       transaction: _transaction 
+      }
+    );
+  } catch (error: any) {
+    console.log('\nserialization.service::updateSerializationByAttribute', error);
+    throw new Error(error);
+  }
+}
