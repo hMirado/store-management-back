@@ -14,7 +14,7 @@ export const UserShop = sequelize.define(
 			},
 		},
 		shop_id: {
-			type: Sequelize.STRING,
+			type: Sequelize.INTEGER,
 			references: {
 				model: Shop,
 				key: "shop_id",

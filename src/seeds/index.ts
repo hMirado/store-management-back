@@ -12,6 +12,7 @@ const attributeTypeSeed = require('./attribute-type.seed');
 const transferStatusSeed = require('./transfer-status.seed');
 const transferTypeSeed = require('./transfer-type.seed');
 const userShopSeed = require('./user-shop.seed');
+const paymentSeed = require('./payment.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -28,6 +29,7 @@ module.exports = () => {
     userSeed.jenny(),
     userSeed.jane(),
     userSeed.john(),
+    paymentSeed()
   ]).then(() => {
     [
       ShopSeed(),

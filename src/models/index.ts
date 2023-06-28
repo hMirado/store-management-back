@@ -21,6 +21,9 @@ import { UserShop } from './user-shop.model';
 import { TransferProduct } from './transfer-product.model';
 import { TransferSerialization } from './transfer-serialization.model';
 import { CashRegister } from './cash-register.model';
+import { Payment } from './payment.model';
+import { Cart } from './cart.model';
+import { CartProduct } from './cart-product.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -565,6 +568,100 @@ CashRegister.belongsTo(Shop, {
   targetKey: "shop_id"
 });
 
+
+/**
+ * @summary: cart & seller & customer & payment & product
+ */
+// Seller
+User.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_seller",
+    allowNull: false
+  },
+  sourceKey: "user_id"
+});
+Cart.belongsTo(User, {
+  as: "seller",
+  foreignKey: {
+    name: "fk_seller",
+    allowNull: false
+  },
+  targetKey: "user_id"
+});
+
+// Customer
+User.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_customer",
+    allowNull: true
+  },
+  sourceKey: "user_id"
+});
+Cart.belongsTo(User, {
+  as: "customer",
+  foreignKey: {
+    name: "fk_customer",
+    allowNull: true
+  },
+  targetKey: "user_id"
+});
+
+// Shop
+Shop.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Cart.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+
+// Payment
+Payment.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_payment_id",
+    allowNull: false
+  },
+  sourceKey: "payment_id"
+});
+Cart.belongsTo(Payment, {
+  foreignKey: {
+    name: "fk_payment_id",
+    allowNull: false
+  },
+  targetKey: "payment_id"
+});
+
+// Product
+Product.belongsToMany(
+  Cart,
+  {
+    through: CartProduct,
+    foreignKey: {
+      name: "product_id",
+      allowNull: false
+    }
+  }
+);
+Cart.belongsToMany(
+  Product,
+  {
+    through: CartProduct,
+    foreignKey: {
+      name: "cart_id",
+      allowNull: false
+    }
+  }
+);
+
+
+
 module.exports = { 
   Company, 
   Shop, 
@@ -587,5 +684,8 @@ module.exports = {
   TransferType,
   TransferProduct,
   TransferSerialization,
-  CashRegister
+  CashRegister,
+  Payment,
+  Cart,
+  CartProduct
 };

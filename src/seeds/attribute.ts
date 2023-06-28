@@ -1,4 +1,3 @@
-const Description = require('../models/attribute.model');
 import { Attribute } from "../models/attribute.model";
 
 module.exports = () => {
@@ -8,5 +7,5 @@ module.exports = () => {
       storage_type: 'SSD',
       fk_product_id: 2
     }
-  ]).then(() => console.log('Seed attribute complete'));
+  ]).then(() => console.log('\n Seed attribute complete'));
 }
