@@ -87,13 +87,13 @@ export const getSelled = async (req: Request) => {
   }
   if (query.startDate && query.startDate != '') {
     const date = new Date(query.startDate.toString() + ' ' + '00:00:00');
-    select += ' AND createdAt >= :date'
-    replacements = { ... replacements, ...{ date: date}};
+    select += ' AND createdAt >= :start'
+    replacements = { ... replacements, ...{ start: date}};
   }
   if (query.endDate && query.endDate != '') {
     const date = new Date(`${query.endDate.toString()} 23:59:59`);
-    select += ' AND createdAt <= :date'
-    replacements = { ... replacements, ...{ date: date}};
+    select += ' AND createdAt <= :end'
+    replacements = { ... replacements, ...{ end: date}};
   }
 
   try {
