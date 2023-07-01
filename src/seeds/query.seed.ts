@@ -1,4 +1,4 @@
-import Sequelize from "sequelize";
+export {}
 const sequelize = require("../config/db.config");
 
 module.exports = {

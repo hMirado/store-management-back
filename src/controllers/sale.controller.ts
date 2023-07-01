@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getShopByUuid } from "../services/shop.service";
-import { sell } from "../services/sale.service";
+import { sell, getSelled } from "../services/sale.service";
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid } from "../services/product.service";
 import { getSerializationByGroup } from "../services/serialization.service";
@@ -28,10 +28,19 @@ export const sellHandler = async (req: Request, res: Response) => {
         serialization = _serialization.group_id;
     }
     const sold = await sell(shop.shop_id, user.user_id, product.product_id, serialization, req.body.price);
-    return res.status(201).json({status: 200, data: sold, notification: 'Article vendu'});
+    return res.status(201).json({status: 201, data: sold, notification: 'Article vendu'});
   } catch (error) {
     console.log(error);
     
     return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getSelledHandler = async (req: Request, res: Response) => {
+  try {
+    const products = await getSelled(req);
+    return res.status(200).json({status: 200, data: products, notification: 'Article vendu'});
+  } catch (error) {
+    
   }
 }
