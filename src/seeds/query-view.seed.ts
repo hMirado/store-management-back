@@ -10,6 +10,7 @@ module.exports  = () => {
       s.discount,
       s.createdAt,
       s.deletedAt,
+      s.serialization,
       sh.shop_uuid,
       sh.shop_name,
       p.code,

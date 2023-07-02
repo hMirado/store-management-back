@@ -4,6 +4,6 @@ import { Router } from "express";
 const route  = Router();
 
 route.post('/', verifyToken, sellHandler);
-route.get('/', getSelledHandler);
+route.get('/', verifyToken, getSelledHandler);
 
 module.exports = route;

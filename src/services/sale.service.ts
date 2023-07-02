@@ -4,6 +4,7 @@ import { getPrice } from "./price.service";
 import { updateSerializationIsSold } from "./serialization.service";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 import { createStockMovment } from "./stock.service";
+import { getPagination } from "../helpers/pagination";
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
 
@@ -71,7 +72,7 @@ export const addSaleData = async (sale: typeof model.sale, transaction: typeof s
 
 export const getSelled = async (req: Request) => {
   const query = req.query;
-  let select = "SELECT * FROM get_sales WHERE deletedAt IS NULL";
+  let select = "SELECT *, (select count(sale_id) FROM get_sales) AS total FROM get_sales WHERE deletedAt IS NULL";
   let replacements: Object = {}
   if (query.product && query.product != '') {
     select += ' AND (code LIKE :product OR label LIKE :product)';
@@ -96,6 +97,18 @@ export const getSelled = async (req: Request) => {
     replacements = { ... replacements, ...{ end: date}};
   }
 
+  const page = query.page ? +query.page : 1;
+  const size = query.size ? +query.size : 10;
+  const limit = page == 1 ? 0 : (page - 1) * size
+  select += ' ORDER BY createdAt ASC LIMIT :limit, :size';
+  replacements = { 
+    ... replacements, 
+    ...{ 
+      limit: +limit,
+      size: +size
+    }
+  };
+
   try {
     const products = await sequelize.query(
       select,
@@ -104,7 +117,18 @@ export const getSelled = async (req: Request) => {
         type: QueryTypes.SELECT
       }
     );
-    return products;
+
+    const total = products.length > 0 ? products[0]['total'] : 0;
+    console.log("\nproducts:", products[0]);
+
+    const response = {
+      totalItems: total,
+      items: products,
+      currentPage: page
+    }
+ 
+    
+    return response;
   } catch (error: any) {
     console.log("\n sale.service::getSelled", error);
     throw new Error(error);
