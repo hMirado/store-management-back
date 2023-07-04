@@ -162,7 +162,7 @@ export const getStockById = async (shopId: number, productId: number) => {
   }
 }
 
-export const createStock = async (stock: typeof model.Stock, _transaction: IDBTransaction | any = null) => {
+export const createStock = async (stock: typeof model.Stock, _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Stock.create(
       stock,
@@ -177,7 +177,7 @@ export const createStock = async (stock: typeof model.Stock, _transaction: IDBTr
   }
 }
 
-export const editStock = async (quantity: number, stockId: number, _transaction: IDBTransaction | any = null) => {
+export const editStock = async (quantity: number, stockId: number, _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Stock.update(
       { quantity: quantity },
@@ -191,7 +191,7 @@ export const editStock = async (quantity: number, stockId: number, _transaction:
   }
 }
 
-export const createStockMovment = async (stockMovments: typeof model.StockMovment[], _transaction: IDBTransaction | any = null) => {
+export const createStockMovment = async (stockMovments: typeof model.StockMovment[], _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.StockMovment.bulkCreate(stockMovments, { transaction: _transaction });
   } catch (error: any) {
@@ -241,7 +241,7 @@ export const countProductOutStock = async (shopId: number|null = null) => {
   }
 }
 
-export const addStock = async (product: typeof model.Product, shopId: number, isSerializable: boolean, _stock: any, req: Request,_transaction: IDBTransaction | any = null) => {
+export const addStock = async (product: typeof model.Product, shopId: number, isSerializable: boolean, _stock: any, req: Request,_transaction: typeof sequelize.IDBTransaction | any = null) => {
   const transaction = await sequelize.transaction();
   const quantity = req.body.quantity;
   const serializations = req.body.serializations;
@@ -298,7 +298,7 @@ export const getStockByProductShop = async (productId: number, shopId: number) =
   }
 }
 
-export const updateStock = async (quantity: number, productId: number, shopId: number, _transaction: IDBTransaction | null = null) => {
+export const updateStock = async (quantity: number, productId: number, shopId: number, _transaction: typeof sequelize.IDBTransaction | null = null) => {
   try {
     return await model.Stock.update(
       {

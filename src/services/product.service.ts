@@ -235,7 +235,7 @@ export const getProductByLabelOrCode = async (search: string) => {
 }
 
 
-export const createProduct = async (product: typeof model.Product, transaction: IDBTransaction|null = null) => {
+export const createProduct = async (product: typeof model.Product, transaction: typeof sequelize.IDBTransaction|null = null) => {
   try {
     return await model.Product.create(
       product, 

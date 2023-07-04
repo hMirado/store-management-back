@@ -13,6 +13,7 @@ const transferStatusSeed = require('./transfer-status.seed');
 const transferTypeSeed = require('./transfer-type.seed');
 const userShopSeed = require('./user-shop.seed');
 const paymentSeed = require('./payment.seed');
+const view = require('./query-view.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -37,7 +38,8 @@ module.exports = () => {
       authorizationRoleAdminSeed()
     ];
   }).then(() => {
-    userShopSeed()
+    userShopSeed(),
+    view()
   }).then(() => {
     console.log('\nSeed completed.\n')
   })

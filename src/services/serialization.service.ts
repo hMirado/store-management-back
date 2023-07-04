@@ -2,7 +2,7 @@ const model = require("../models/index");
 import { Op, QueryTypes } from "sequelize"
 const sequelize = require("../config/db.config");
 
-export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: IDBTransaction | any = null) => {
+export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Serialization.bulkCreate(value, { transaction: _transaction });
   } catch (error: any) {
@@ -135,7 +135,7 @@ export const getSerializationByProduct_Type_Value = async (productId: number, ty
   }
 }
 
-export const updateSerializationInTransfer = async (groupId: string[], transferId: number, _transaction: IDBTransaction | null = null) => {
+export const updateSerializationInTransfer = async (groupId: string[], transferId: number, _transaction: typeof sequelize.IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
       {
@@ -154,7 +154,7 @@ export const updateSerializationInTransfer = async (groupId: string[], transferI
   }
 }
 
-export const updateSerializationShop = async (groupId: string[], shop: number, _transaction: IDBTransaction | null = null) => {
+export const updateSerializationShop = async (groupId: string[], shop: number, _transaction: typeof sequelize.IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
       {
@@ -175,7 +175,7 @@ export const updateSerializationShop = async (groupId: string[], shop: number, _
 }
 
 
-export const updateSerializationIsSold = async (value: boolean = true, groupId: string[], _transaction: IDBTransaction | null = null) => {
+export const updateSerializationIsSold = async (value: boolean = true, groupId: string[], _transaction: typeof sequelize.IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
       {

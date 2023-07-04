@@ -21,7 +21,7 @@ export const getTransfertStatusByCode = async (code: string) => {
   }
 }
 
-export const createTransfer = async (values: typeof model.Transfer, _transaction: IDBTransaction | any = null) => {
+export const createTransfer = async (values: typeof model.Transfer, _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Transfer.create(
       values,
@@ -306,7 +306,7 @@ export const getAttributeSerializationTransfer = async (shop: number, product: n
   }
 }
 
-export const updateIsInTransferSerializationTransfer = async (shop: number, product: number, value: boolean, isInTransfer: boolean, _transaction: IDBTransaction | any = null) => {
+export const updateIsInTransferSerializationTransfer = async (shop: number, product: number, value: boolean, isInTransfer: boolean, _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {    
     return await model.Serialization.update(
       {
@@ -524,7 +524,7 @@ export const validateTransfer = async (transferUuid: string, validator: number, 
   }
 }
 
-const updateTransfer = async(transferUuid: string, status: number, user: number, commentary: string = '', _transaction: IDBTransaction | any = null) => {
+const updateTransfer = async(transferUuid: string, status: number, user: number, commentary: string = '', _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     const newValue = {
       transfer_commentary: commentary != '' ? commentary : null,
