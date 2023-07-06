@@ -36,7 +36,7 @@ export const getSerializationByValue = async (value: string, type: number) => {
 }
 
 export const getSerializationByProductShop = async (productId: number, shopId: number, search: string = '', isSold: boolean = false) => {
-  const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
+  const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, p.product_uuid, s.shop_id, s.shop_uuid, st.serialization_type_id, st.code, st.label";
   let query = `
     SELECT ${column} FROM serializations sr
     INNER JOIN serialization_types st ON sr.fk_serialization_type_id = st.serialization_type_id

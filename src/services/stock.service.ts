@@ -318,3 +318,17 @@ export const updateStock = async (quantity: number, productId: number, shopId: n
     throw new Error(error);
   }
 }
+
+export const getProductStockQuantity = async (product_id: number, shop_id: number) => {
+  try {
+    return await model.Stock.findOne({
+      where: {
+        fk_product_id: product_id,
+        fk_shop_id: shop_id
+      }
+    })
+  } catch (error: any) {
+    console.log('\nstock.servie::getProductQuantity', error);
+    throw new Error(error);
+  }
+}

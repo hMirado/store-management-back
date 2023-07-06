@@ -8,7 +8,7 @@ import { getPagination } from "../helpers/pagination";
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
 
-export const sell = async (shop: number, user: number, product: number, serialization: string|null = null, price: number) => {
+export const sell = async (shop: number, user: number, product: number, serialization: string|null = null, price: number, quantity: number = 1) => {
   const transaction = await sequelize.transaction();
   let created: any = {};
   try {
@@ -34,7 +34,7 @@ export const sell = async (shop: number, user: number, product: number, serializ
 
     // add data to stock_movments and stock
     const stockMovement = {
-      quantity: 1,
+      quantity: quantity,
       fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
       fk_product_id: product,
       fk_shop_id: shop

@@ -4,6 +4,7 @@ import { sell, getSelled } from "../services/sale.service";
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid } from "../services/product.service";
 import { getSerializationByGroup } from "../services/serialization.service";
+import { getProductStockQuantity } from "../services/stock.service";
 const model = require("../models/index");
 
 export const sellHandler = async (req: Request, res: Response) => {
@@ -27,11 +28,17 @@ export const sellHandler = async (req: Request, res: Response) => {
       else 
         serialization = _serialization.group_id;
     }
-    const sold = await sell(shop.shop_id, user.user_id, product.product_id, serialization, req.body.price);
+
+    const quantity = req.body.quantity ? req.body.quantity : 1;
+    if (!product.is_serializable) {
+      const stock = await getProductStockQuantity(product.product_id, shop.shop_id);
+      if (quantity < stock.quantity) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Quantité en stock insuffisante.'});
+    }
+    
+    const sold = await sell(shop.shop_id, user.user_id, product.product_id, serialization, req.body.price, quantity);
     return res.status(201).json({status: 201, data: sold, notification: 'Article vendu'});
   } catch (error) {
     console.log(error);
-    
     return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }
