@@ -12,17 +12,14 @@ export const sell = async (shop: number, user: number, product: number, serializ
   const transaction = await sequelize.transaction();
   let created: any = {};
   try {
-    // get product price
-    const _price = await getPrice(product.toString(), shop.toString());
-    const ttc_price = _price[0].ttc_price / 100;
-    const discount = ((ttc_price - price) * 100) / ttc_price;
-    
+
     // add data to sales table
     const saleValue: typeof model.sale = {
       fk_shop_id: shop,
       fk_user_id: user,
       fk_product_id: product,
-      discount: discount * 100,
+      sale_price: price * 100,
+      sale_quantity: quantity,
       serialization: serialization,
     };
 

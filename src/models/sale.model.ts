@@ -15,9 +15,14 @@ export const Sale = sequelize.define(
 			defaultValue: Sequelize.UUIDV4,
 			allowNull: false,
 		},
-    discount: {
+    sale_price: {
       type: Sequelize.INTEGER,
-      allowNull: true
+      allowNull: false
+    },
+    sale_quantity: {
+      type: Sequelize.INTEGER,
+			defaultValue: 1,
+      allowNull: false
     },
     serialization: {
       type: Sequelize.STRING,
