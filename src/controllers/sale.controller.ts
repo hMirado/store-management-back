@@ -32,7 +32,7 @@ export const sellHandler = async (req: Request, res: Response) => {
     const quantity = req.body.quantity ? req.body.quantity : 1;
     if (!product.is_serializable) {
       const stock = await getProductStockQuantity(product.product_id, shop.shop_id);
-      if (quantity < stock.quantity) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Quantité en stock insuffisante.'});
+      if (quantity > stock.quantity) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Quantité en stock insuffisante.'});
     }
     
     const sold = await sell(shop.shop_id, user.user_id, product.product_id, serialization, req.body.price, quantity);
