@@ -105,7 +105,7 @@ export const getAllTransfer = async (params: any) => {
   try {
     const page = (params.page && +params.page > 1) ? +params.page - 1 : 0;
     const size = params.size ? params.size : 10;
-    const { limit, offset } = getPagination(page, +size);  console.log("\npage", page);
+    const { limit, offset } = getPagination(page, +size);
     const transfers: typeof model.Transfer[] =  await model.Transfer.findAndCountAll(
       {
         attributes: ['transfer_id', 'transfer_uuid', 'transfer_code', 'createdAt', 'updatedAt'],

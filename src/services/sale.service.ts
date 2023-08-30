@@ -1,10 +1,8 @@
 import { Request } from "express";
-import { Op, QueryTypes } from "sequelize";
-import { getPrice } from "./price.service";
+import { QueryTypes } from "sequelize";
 import { updateSerializationIsSold } from "./serialization.service";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 import { createStockMovment } from "./stock.service";
-import { getPagination } from "../helpers/pagination";
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
 
@@ -116,18 +114,32 @@ export const getSelled = async (req: Request) => {
     );
 
     const total = products.length > 0 ? products[0]['total'] : 0;
-    console.log("\nproducts:", products[0]);
-
     const response = {
       totalItems: total,
       items: products,
       currentPage: page
     }
  
-    
     return response;
   } catch (error: any) {
     console.log("\n sale.service::getSelled", error);
+    throw new Error(error);
+  }
+}
+
+export const countSale = async (shop: number|null = null) => {
+  let conditions: any = {};
+  if (shop && shop != null) conditions['fk_shop_id'] = shop;
+  try {
+    const total = await model.Sale.findAll({
+      attributes: [
+        [sequelize.fn('SUM', sequelize.col('sale_price')), 'sales'],
+        [sequelize.fn('COUNT', sequelize.col('sale_quantity')), 'quantities'],
+      ]
+    });
+    return total[0];
+  } catch (error: any) {
+    console.log("\n sale.service::countSale", error);
     throw new Error(error);
   }
 }

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getShopByUuid } from "../services/shop.service";
-import { sell, getSelled } from "../services/sale.service";
+import { sell, getSelled, countSale } from "../services/sale.service";
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid } from "../services/product.service";
 import { getSerializationByGroup } from "../services/serialization.service";
@@ -48,6 +48,24 @@ export const getSelledHandler = async (req: Request, res: Response) => {
     const products = await getSelled(req);
     return res.status(200).json({status: 200, data: products, notification: 'Article vendu'});
   } catch (error) {
-    
+    console.log(error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const countSaleHandler = async (req: Request, res: Response) => {
+  try {
+    let shopId: number | null = null
+    if (req.params.uuid) {
+      const shop: typeof model.shop = await getShopByUuid(req.params.uuid);
+      if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
+      else shopId = shop.shop_id;
+    }
+
+    const total = await countSale(shopId);
+    return res.status(200).json({status: 200, data: total, notification: 'Statistique'});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }
