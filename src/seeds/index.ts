@@ -30,16 +30,18 @@ module.exports = () => {
     userSeed.jenny(),
     userSeed.jane(),
     userSeed.john(),
-    paymentSeed()
+    paymentSeed(),
+    ShopSeed(),
   ]).then(() => {
     [
-      ShopSeed(),
       //ProductSeed(),
       authorizationRoleAdminSeed()
     ];
   }).then(() => {
-    userShopSeed(),
-    view()
+    [
+      userShopSeed(),
+      view()
+    ]
   }).then(() => {
     console.log('\nSeed completed.\n')
   })

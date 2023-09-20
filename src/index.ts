@@ -32,13 +32,8 @@ sequelize.sync({ alter: false , force: false });
 // sequelize
 //   .sync({ force: true })
 //   .then(() => Seed())
-//   .then(() => {
-//     console.log("\nDrop and resync db.\n");
-//   })
-//   .catch((error: Error) => {
-//     console.log("\nERROR : \n");
-//     console.log(error);
-//   });
+//   .then(() => console.log("\nDrop and resync db.\n"))
+//   .catch((error: Error) => console.log("\nERROR : \n", error));
 
 app.use("/company", companyRoutes);
 app.use("/shop", shopRoutes);

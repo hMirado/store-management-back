@@ -21,7 +21,7 @@ import { Role } from "../models/role.model";
 import { generateId } from "../helpers/helper";
 import { getShopById, getShopByUuid } from "../services/shop.service";
 import { UserShop } from "models/user-shop.model";
-import { getRoleByUuid } from "../services/role.service";
+import { verifyRoleExist } from "../services/role.service";
 
 export const createUserHandler = async (req: IGetUserAuthInfoRequest, res: Response) => {
   const { first_name, last_name, email, phone_number, fk_role_id } = req.body;
@@ -131,7 +131,7 @@ export const findAllUserHander = async (req: Request, res: Response) => {
   let shopUuid: string = '';
   try {
     if (req.query.role) {
-      const role: typeof Role = await getRoleByUuid(req.query.role as string);
+      const role: typeof Role = await verifyRoleExist(req.query.role as string);
       if (!role) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Role indiquée inexistante.'});
       roleId = role.role_id
     }
