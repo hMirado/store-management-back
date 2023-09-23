@@ -1,7 +1,6 @@
-code;label
-ACCESS;Accessoire
-APC;Appareil photo & caméra
-JV;Jeux vidéo
-OPC;Ordinateur & PC
-PHONE;Smartphone
-TBT;Tablette
+[CODE] code;[LABEL] label
+GSM; smartphone
+JV; jeux vidéo
+tab; tablette
+acc; accessoire
+AP; Appareil photo 

@@ -3,6 +3,8 @@ const sequelize = require("../config/db.config");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
+var XLSX = require('xlsx');
+var fs = require('fs');
 
 export const getCategories = async(req: Request) => {
   let condition: any = {}
@@ -128,6 +130,68 @@ export const updateCategory = async (uuid: string, value: typeof model.Category)
     )
   } catch (error: any) {
     console.log("\n category.service::updateCategory");
+    console.log(error);
+    throw new Error(error);
+  }
+}
+
+export const importCategory = async (file: any) => {
+  try {
+    //const bufferExcel = Buffer.from(file.toString().replace("data:@file/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,", ""),'base64');
+    const bufferExcel = Buffer.from(file.toString().replace("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,", ""),'base64');
+    const workbook = XLSX.read(bufferExcel, { type: 'buffer' });
+    const sheetNamesList = workbook.SheetNames;
+    const excelData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetNamesList[0]]);
+    let errors: any = {
+      total: 0,
+      data: []
+    };
+    let success: any = {
+      total: 0,
+      data: []
+    }
+    excelData.forEach((data: any, i: number) => {
+      let value = data;
+      delete Object.assign(value, {code: value['[CODE] code']})['[CODE] code'];
+      delete Object.assign(value, {label: value['[LABEL] label']})['[LABEL] label'];
+
+      if (value.code && value.code != '' && value.label && value.label != '') {
+        success.total ++;
+        success.data.push({
+          code: value.code.toUpperCase(),
+          label: value.label
+        })
+      } else {
+        errors.total ++;
+        errors['data'].push({
+          '[CODE] code': (!value.code || value.code == '') ? '' : value.code,
+          '[LABEL] label': (!value.label  || value.label == '') ? '' : value.label,
+        })
+      }
+    });
+    await createCategory(success.data);
+
+    const timestamp = new Date().getTime();
+    const fileName = timestamp + ".xlsx";
+    let fileEncoded = '';
+    if (errors.total > 0) {
+      const workSheet = XLSX.utils.json_to_sheet(errors.data);
+      const workBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workBook, workSheet, "Sheet 1");
+      XLSX.writeFile(workBook, fileName);
+
+      const bitmap = fs.readFileSync(fileName);
+      fileEncoded = Buffer.from(bitmap).toString('base64');
+
+      if (fileEncoded != '') fs.unlinkSync(fileName);
+    }
+    return await {
+      success: success.total,
+      error:  errors.total,
+      fileName: fileEncoded
+    }
+  } catch (error: any) {
+    console.log("\n category.service::importCategory");
     console.log(error);
     throw new Error(error);
   }
