@@ -3,6 +3,7 @@ const sequelize = require("../config/db.config");
 import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
+import { generateExcel, encodeFile } from "../helpers/helper";
 var XLSX = require('xlsx');
 var fs = require('fs');
 
@@ -175,14 +176,8 @@ export const importCategory = async (file: any) => {
     const fileName = timestamp + ".xlsx";
     let fileEncoded = '';
     if (errors.total > 0) {
-      const workSheet = XLSX.utils.json_to_sheet(errors.data);
-      const workBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workBook, workSheet, "Sheet 1");
-      XLSX.writeFile(workBook, fileName);
-
-      const bitmap = fs.readFileSync(fileName);
-      fileEncoded = Buffer.from(bitmap).toString('base64');
-
+      generateExcel(errors.data, fileName);
+      fileEncoded = encodeFile(fileName);
       if (fileEncoded != '') fs.unlinkSync(fileName);
     }
     return await {

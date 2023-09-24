@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createCategory, getCategories, updateCategory, getCategoryByUuid, importCategory } from "../services/category.service";
 const model = require("../models/index");
+import { encodeFile } from "../helpers/helper"
 
 module.exports.getCategories = async (req: Request, res: Response) => {
 	try {
@@ -83,9 +84,20 @@ export const importCategoryHandler = async (req: Request, res: Response) => {
 		if (!file.includes("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,")) 
 			return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Format invalide. Le fichier n\'est pas de format XLS/XLSX.'});
 		const response = await importCategory(file);
-		return res.status(201).json({status: 201, data: response, notification: 'Catégorie d\'article modifiée.'});
+		return res.status(201).json({status: 201, data: response, notification: 'Importation effectué.'});
 	} catch (error: any) {
 		console.log("\n category.controller::importCategoryHandler",error);
     return res.status(500).json({ error: error, notification: "Erreur système" });
 	}
+}
+
+export const exportModelHandler = async (req: Request, res: Response) => {
+  try {
+    const fileName = 'files/models/category.xlsx';
+    const encodedFile = encodeFile(fileName);
+    return res.status(200).json({status: 200, data: encodedFile, notification: 'Export du modèle effectué.'});
+  } catch (error) {
+    console.error('product.controller::exportModelHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
 }

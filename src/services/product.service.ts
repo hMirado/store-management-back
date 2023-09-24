@@ -5,6 +5,9 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { getShops } from "./shop.service";
 import { createMuliplePrice } from "./price.service";
 const sequelize = require("../config/db.config");
+import { convertToExcel, generateExcel, encodeFile } from "../helpers/helper"
+import { getCategoryByCode } from "./category.service";
+var fs = require('fs');
 
 export const getProductsOld = async (req: Request, categoryId: string = '') => {
   let conditions: any = {};
@@ -311,6 +314,89 @@ export const updateProduct = async (value: typeof model.Product) => {
     return isUpdated
   } catch (error: any) {
     console.error("product.service::updateProduct", error);
+    throw new Error(error);
+  }
+}
+
+export const importProduct = async (base64: string) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const excelData = convertToExcel(base64);
+    let errors: any = {
+      total: 0,
+      data: []
+    };
+    let success: number = 0;
+    let prices: typeof model.Price[] = [];
+    for (const data of excelData) {
+      let value = data;
+      delete Object.assign(value, {code: value['[CODE_ITEM] code article']})['[CODE_ITEM] code article'];
+      delete Object.assign(value, {label: value['[LABEL] Libellé']})['[LABEL] Libellé'];
+      delete Object.assign(value, {isSerializable: value['[IS_SERIALIZABLE] Sérialization']})['[IS_SERIALIZABLE] Sérialization'];
+      delete Object.assign(value, {price: value['[PRICE] Prix']})['[PRICE] Prix'];
+      delete Object.assign(value, {category: value['[CODE_CATEGORY] Catégorie']})['[CODE_CATEGORY] Catégorie'];
+
+      if (!value.code || !value.label || !value.price || !value.category) {
+        errors.total ++;
+        errors['data'].push({
+          '[CODE_ITEM] code article': !value.code ? '' : value.code,
+          '[LABEL] Libellé': !value.label ? '' : value.label,
+          '[PRICE] Prix': !value.price ? '' : value.price,
+          '[CODE_CATEGORY] Catégorie': !value.category ? '' : value.category,
+        })
+      } else {
+        const category = await getCategoryByCode(value.category);
+        if (!category || category == null) {
+          errors.total ++;
+          errors['data'].push({
+            '[CODE_ITEM] code article': !value.code ? '' : value.code,
+            '[LABEL] Libellé': !value.label ? '' : value.label,
+            '[PRICE] Prix': !value.price ? '' : value.price,
+            '[CODE_CATEGORY] Catégorie': !value.category ? '' : value.category,
+          })
+        } else {
+          value.isSerializable = !value.isSerializable ? 0 : value.isSerializable;
+          const shops: typeof model.Shop[] = await getShops();
+          const shopIds = shops.map((shop: typeof model.Shop) => shop.shop_id);
+
+          const product = {
+            code: value.code,
+            label: value.label,
+            is_serializable: value.isSerializable,
+            fk_category_id: category.category_id
+          }
+          const createdProduct = await createProduct(product, transaction);
+          const htPrice = +value.price * 0.8;
+          for (const id of shopIds) {
+            prices.push({
+              ht_price: htPrice * 100,
+              ttc_price: +value.price * 100,
+              fk_product_id: createdProduct.product_id,
+              fk_shop_id: id
+            });
+          }
+          success ++
+        }
+      }
+    };
+    await createMuliplePrice(prices, transaction);
+    transaction.commit();
+
+    const timestamp = new Date().getTime();
+    const fileName = timestamp + ".xlsx";
+    let fileEncoded = '';
+    if (errors.total > 0) {
+      generateExcel(errors.data, fileName);
+      fileEncoded = encodeFile(fileName);
+      if (fileEncoded != '') fs.unlinkSync(fileName);
+    }
+    return await await {
+      success: success,
+      error:  errors.total,
+      file: fileEncoded
+    }
+  } catch (error: any) {
+    console.error("product.service::importProduct", error);
     throw new Error(error);
   }
 }

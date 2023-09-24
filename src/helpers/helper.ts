@@ -1,3 +1,6 @@
+var XLSX = require('xlsx');
+var fs = require('fs');
+
 export const generateId = () => {
   const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -28,4 +31,23 @@ export const generateCodeWithDate = () => {
     result += String.fromCharCode(97 + Math.floor(Math.random() * 26)).toLocaleUpperCase();
   };
   return `${result}/${year}/${month}/${day}`;
+}
+
+export const generateExcel = (data: any, fileName: string) => {
+  const workSheet = XLSX.utils.json_to_sheet(data);
+  const workBook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workBook, workSheet, "Sheet 1");
+  XLSX.writeFile(workBook, fileName);
+}
+
+export const encodeFile = (fileName: any) => {
+  const bitmap = fs.readFileSync(fileName);
+  return  Buffer.from(bitmap).toString('base64'); 
+}
+
+export const convertToExcel = (base64: string) => {
+  const bufferExcel = Buffer.from(base64.toString().replace("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,", ""),'base64');
+  const workbook = XLSX.read(bufferExcel, { type: 'buffer' });
+  const sheetNamesList = workbook.SheetNames;
+  return XLSX.utils.sheet_to_json(workbook.Sheets[sheetNamesList[0]]);
 }

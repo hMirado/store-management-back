@@ -18,6 +18,7 @@ export const createMuliplePrice = async (prices: typeof model.Price[], transacti
   try {
     return await model.Price.bulkCreate(
       prices,
+      {updateOnDuplicate: ["fk_product_id", "fk_shop_id"]},
       transaction
     )
   } catch (error: any) {

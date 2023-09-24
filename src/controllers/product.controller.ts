@@ -1,7 +1,4 @@
-const fs = require("fs");
-const XLSX = require('xlsx');
 const model = require("../models/index");
-import { toLowerKeys } from "../helpers/format";
 import { Request, Response } from "express";
 import { getCategories, getCategoryById, getCategoryByUuid } from "../services/category.service";
 import { 
@@ -13,9 +10,11 @@ import {
   getProductByLabelOrCode,
   updateProduct,
   getProductByUuid,
-  getProductByLabel
+  getProductByLabel,
+  importProduct
 } from "../services/product.service";
 import { getShopByUuid } from "../services/shop.service";
+import { encodeFile } from "../helpers/helper";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
@@ -161,6 +160,30 @@ export const updateProductHandler = async (req: Request, res: Response) => {
     return res.status(201).json({status: 201, data: update, notification: 'L`\article a été modifié avec succès.'});
   } catch (error: any) {
     console.error('product.controller::getProductByLabelOrCodeHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const importProductHandler = async (req: Request, res: Response) => {
+  try {
+    const file = req.body.file;
+    if (!file.includes("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"))
+      return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Format invalide. Le fichier n\'est pas de format XLS/XLSX.'});
+    const response = await importProduct(file);
+    return res.status(201).json({status: 201, data: response, notification: 'Importation effectué.'});
+  } catch (error) {
+    console.error('product.controller::importProductHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const exportModelHandler = async (req: Request, res: Response) => {
+  try {
+    const fileName = 'files/models/product.xlsx';
+    const encodedFile = encodeFile(fileName);
+    return res.status(200).json({status: 200, data: encodedFile, notification: 'Export du modèle effectué.'});
+  } catch (error) {
+    console.error('product.controller::exportModelHandler', error);
     return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }
