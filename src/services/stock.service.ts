@@ -4,7 +4,7 @@ import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 import { createMultipleSerialization } from "./serialization.service";
-import { generateUniqueId } from "../helpers/helper";
+import { generateUniqueId, convertToExcel } from "../helpers/helper";
 const sequelize = require("../config/db.config");
 
 export const getStockByIdAndShop = async (product: number, shop: number) => {
@@ -329,6 +329,27 @@ export const getProductStockQuantity = async (product_id: number, shop_id: numbe
     })
   } catch (error: any) {
     console.log('\nstock.servie::getProductQuantity', error);
+    throw new Error(error);
+  }
+}
+
+export const importStock = async (base64: string) => {
+  try {
+    const excelData = convertToExcel(base64);
+    let errors: any = {
+      total: 0,
+      data: []
+    };
+    for (const data of excelData) {
+      let value = data;
+      delete Object.assign(value, {code_item: value['[ITEM_CODE] code article']})['[ITEM_CODE] code article'];
+      delete Object.assign(value, {shop: value['[SHOP] Shop']})['[SHOP] Shop'];
+      delete Object.assign(value, {quantity: value['[QUANTITY] Quantité']})['[QUANTITY] Quantité'];
+      console.log("value",value);
+      
+    }
+  } catch (error: any) {
+    console.log('stock.servie::getProductQuantity', error);
     throw new Error(error);
   }
 }

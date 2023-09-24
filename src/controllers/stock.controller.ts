@@ -9,7 +9,8 @@ import {
   countProductInStock,
   countProductOutStock,
   addStock,
-  getStockByProductShop
+  getStockByProductShop,
+  importStock
 } from '../services/stock.service'
 import { getShopByUuid } from '../services/shop.service'
 import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.service'
@@ -224,7 +225,22 @@ export const getStockByProductShopHandler = async (req: Request, res: Response) 
     const stock: typeof model.Stock = await getStockByProductShop(product.product_id, shop.shop_id);
     return await res.status(200).json({status: 200, data: stock, notification: "Stock retourné."})
   } catch (error: any) {
-    console.error("\nstock.controller::getStockByProductShopHandler", error)
+    console.error("stock.controller::getStockByProductShopHandler", error)
+    return await res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const importStokHandler = async (req: Request, res: Response) => {
+  try {
+    const file = req.body.file;
+    // data:@file/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,
+    // data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,
+		if (!file.includes("data:@file/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,")) 
+			return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Format invalide. Le fichier n\'est pas de format XLS/XLSX.'});
+    const response = await importStock(file);
+    return await res.status(200).json({status: 200, data: 'stock', notification: "Stock retourné."})
+  } catch (error: any) {
+    console.error("stock.controller::importStokHandler", error);
     return await res.status(500).json({ error: error, notification: "Erreur système" });
   }
 }

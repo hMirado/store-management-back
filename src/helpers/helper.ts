@@ -46,7 +46,8 @@ export const encodeFile = (fileName: any) => {
 }
 
 export const convertToExcel = (base64: string) => {
-  const bufferExcel = Buffer.from(base64.toString().replace("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,", ""),'base64');
+  // TODO replace 
+  const bufferExcel = Buffer.from(base64.toString().replace("data:@file/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,", ""),'base64');
   const workbook = XLSX.read(bufferExcel, { type: 'buffer' });
   const sheetNamesList = workbook.SheetNames;
   return XLSX.utils.sheet_to_json(workbook.Sheets[sheetNamesList[0]]);
