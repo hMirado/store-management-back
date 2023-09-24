@@ -9,6 +9,6 @@ categoryRouter.get('/:uuid', verifyToken, getCategoryByUuidHandler);
 categoryRouter.get('/statistic/count', verifyToken, countCategories);
 categoryRouter.put('/:uuid', verifyToken, updateCategoryHandler);
 categoryRouter.post('/import', verifyToken, importCategoryHandler);
-categoryRouter.get('/export', verifyToken, exportModelHandler);
+categoryRouter.get('/export/model', exportModelHandler);
 
 module.exports = categoryRouter;

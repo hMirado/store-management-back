@@ -22,7 +22,7 @@ productRouter.get('/verify-label', verifyToken, getProductByLabelOrCodeHandler);
 productRouter.get('/count', verifyToken, countProductHandler);
 productRouter.post('/', verifyToken, createProductWithPriceHandler);
 productRouter.put('/', verifyToken, updateProductHandler);
-productRouter.post('/import', importProductHandler);
-productRouter.get('/export', exportModelHandler);
+productRouter.post('/import', verifyToken, importProductHandler);
+productRouter.get('/export', verifyToken, exportModelHandler);
 
 module.exports = productRouter;
