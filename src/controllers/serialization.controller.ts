@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getShopByUuid } from '../services/shop.service';
+import { getShopByUuidOrCode } from '../services/shop.service';
 import { getProductByUuid } from "../services/product.service";
 import { getSerializationByProductShop, getSerializationByProduct_Type_Value, findAllSerializationByGroup } from "../services/serialization.service";
 import { getSerializationTypeById } from "../services/seriliazation-type.service";
@@ -11,7 +11,7 @@ export const getSerializationByProductShopHanlder = async (req: Request, res: Re
   try {
     let shopId: number = 0
     if (shopUuid && shopUuid != '') {
-      const shop = await getShopByUuid(shopUuid);
+      const shop = await getShopByUuidOrCode(shopUuid);
       if (!shop) return res.status(400).json({status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inéxitant'});
       shopId = shop.shop_id
     }

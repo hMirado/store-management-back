@@ -13,7 +13,7 @@ import {
   getProductByLabel,
   importProduct
 } from "../services/product.service";
-import { getShopByUuid } from "../services/shop.service";
+import { getShopByUuidOrCode } from "../services/shop.service";
 import { encodeFile } from "../helpers/helper";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
@@ -73,7 +73,7 @@ export const getProductByDetailHandler = async (req: Request, res: Response) => 
 
 export const getSaleProductsHandler = async (req: Request, res: Response) => {
   try {
-    const shop: typeof model.Shop = await getShopByUuid(req.params.shopUuid)
+    const shop: typeof model.Shop = await getShopByUuidOrCode(req.params.shopUuid)
     if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'La boutique indiquée est inexistante.'});
 
     const products: typeof model.Product = await getProducts(req, shop.shopId);

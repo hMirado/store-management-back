@@ -2,10 +2,16 @@ import { Request } from "express";
 import { Op } from "sequelize";
 const model = require("../models/index");
 
-export const getShopByUuid = async (uuid: string) => {
+export const getShopByUuidOrCode = async (value: string) => {
   try {
     return await model.Shop.findOne({
-      where: {shop_uuid: uuid}
+      //where: {shop_uuid: uuid}
+      where: {
+        [Op.or]: [
+          {shop_uuid: value},
+          {shop_code: value}
+        ]
+      }
     })
   } catch (error) {
     throw error;
@@ -61,7 +67,7 @@ export const openShop = async (shopUuid: string, status: boolean) => {
       }
     );
 
-    return await getShopByUuid(shopUuid)
+    return await getShopByUuidOrCode(shopUuid)
   } catch (error: any) {
     console.error('shop.service::openShop', error)
     throw new Error(error);
