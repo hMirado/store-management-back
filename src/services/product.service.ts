@@ -7,7 +7,7 @@ import { createMuliplePrice } from "./price.service";
 const sequelize = require("../config/db.config");
 import { convertToExcel, generateExcel, encodeFile } from "../helpers/helper"
 import { getCategoryByCode } from "./category.service";
-var fs = require('fs');
+const fs = require('fs');
 
 export const getProductsOld = async (req: Request, categoryId: string = '') => {
   let conditions: any = {};
@@ -285,10 +285,10 @@ export const createProductWithPrice = async (products: []) => {
       }
     }
     const price = await createMuliplePrice(prices, transaction);
-    transaction.commit();
+    await transaction.commit();
     return price ? true : false;
   } catch (error: any) {
-    transaction.rollback();
+    await transaction.rollback();
     console.error("product.service::createProductWithPrice", error);
     throw new Error(error);
   }
@@ -390,7 +390,7 @@ export const importProduct = async (base64: string) => {
       fileEncoded = encodeFile(fileName);
       if (fileEncoded != '') fs.unlinkSync(fileName);
     }
-    return await await {
+    return await {
       success: success,
       error:  errors.total,
       file: fileEncoded
