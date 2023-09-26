@@ -21,6 +21,7 @@ import { createPrice } from '../services/price.service';
 import { ADMIN } from "../config/constants";
 const sequelize = require("../config/db.config");
 const model = require("../models/index");
+import { encodeFile } from "../helpers/helper";
 
 export const getProductsInStockHandler = async (req: Request, res: Response) => {
   let shopUuid: string|null = req.query.shop ? req.query.shop as string : null
@@ -240,5 +241,16 @@ export const importStokHandler = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error("stock.controller::importStokHandler", error);
     return await res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const exportModelHandler = async (req: Request, res: Response) => {
+  try {
+    const fileName = 'files/models/stock.xlsx';
+    const encodedFile = encodeFile(fileName);
+    return res.status(200).json({status: 200, data: encodedFile, notification: 'Export du modèle effectué.'});
+  } catch (error) {
+    console.error('product.controller::exportModelHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }
