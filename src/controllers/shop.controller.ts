@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getShops, getShopByStatus, getShopByUuid, openShop } from "../services/shop.service";
+import { getShops, getShopByStatus, getShopByUuidOrCode, openShop } from "../services/shop.service";
 const model = require("../models/index");
 
 /**
@@ -149,7 +149,7 @@ export const openShopHandler = async (req: Request, res: Response) => {
 		const shopUuid = req.params.uuid;
 		const status = req.body.status;
 		const notification = status ? 'ouvert' : 'fermé';
-		const shop: typeof model.Shop = await getShopByUuid(shopUuid);
+		const shop: typeof model.Shop = await getShopByUuidOrCode(shopUuid);
 		if (!shop)  return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
 		if (shop && shop.is_opened == status) return res.status(200).json({ status: 200, data: shop, notification: `shop déjà ${notification}`});
 		const update = await openShop(shopUuid, status); 

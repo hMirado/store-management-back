@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getShopByUuid } from "../services/shop.service";
+import { getShopByUuidOrCode } from "../services/shop.service";
 import { sell, getSelled, countSale } from "../services/sale.service";
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid } from "../services/product.service";
@@ -9,7 +9,7 @@ const model = require("../models/index");
 
 export const sellHandler = async (req: Request, res: Response) => {
   try {
-    const shop: typeof model.shop = await getShopByUuid(req.body.shop);
+    const shop: typeof model.shop = await getShopByUuidOrCode(req.body.shop);
     if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
 
     const user: typeof model.User = await findUserByUuid(req.body.user);
@@ -57,7 +57,7 @@ export const countSaleHandler = async (req: Request, res: Response) => {
   try {
     let shopId: number | null = null
     if (req.params.uuid) {
-      const shop: typeof model.shop = await getShopByUuid(req.params.uuid);
+      const shop: typeof model.shop = await getShopByUuidOrCode(req.params.uuid);
       if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
       else shopId = shop.shop_id;
     }

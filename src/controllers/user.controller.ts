@@ -19,7 +19,7 @@ import { User } from "../models/user.model";
 import { Shop } from "../models/shop.model";
 import { Role } from "../models/role.model";
 import { generateId } from "../helpers/helper";
-import { getShopById, getShopByUuid } from "../services/shop.service";
+import { getShopById, getShopByUuidOrCode } from "../services/shop.service";
 import { UserShop } from "models/user-shop.model";
 import { verifyRoleExist } from "../services/role.service";
 
@@ -136,7 +136,7 @@ export const findAllUserHander = async (req: Request, res: Response) => {
       roleId = role.role_id
     }
     if (req.query.shop) {
-      const shop: typeof Shop = await getShopByUuid(req.query.shop as string);
+      const shop: typeof Shop = await getShopByUuidOrCode(req.query.shop as string);
       if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
       shopUuid = shop.shop_uuid
     }

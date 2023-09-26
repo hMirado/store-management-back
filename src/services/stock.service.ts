@@ -3,9 +3,13 @@ import { Request } from "express";
 import { getPagination, getPagingData } from "../helpers/pagination";
 import { Op } from "sequelize";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
-import { createMultipleSerialization } from "./serialization.service";
-import { generateUniqueId, convertToExcel } from "../helpers/helper";
+import { createMultipleSerialization, getSerializationByProduct_Type_Value } from "./serialization.service";
+import { generateUniqueId, convertToExcel, generateExcel, encodeFile } from "../helpers/helper";
+import { getProductByCode } from "./product.service";
+import { getShopByUuidOrCode } from "./shop.service";
+import { getSerializationTypeByCode } from "./seriliazation-type.service";
 const sequelize = require("../config/db.config");
+const fs = require('fs');
 
 export const getStockByIdAndShop = async (product: number, shop: number) => {
   try {
@@ -334,22 +338,113 @@ export const getProductStockQuantity = async (product_id: number, shop_id: numbe
 }
 
 export const importStock = async (base64: string) => {
+  const transaction = await sequelize.transaction();
   try {
     const excelData = convertToExcel(base64);
     let errors: any = {
       total: 0,
       data: []
     };
-    for (const data of excelData) {
-      let value = data;
+    let success: number = 0;
+    const stockMovmentType = await getStockMovmentTypeByMovment('IN-IMPORT');
+    for (let index = 0; index < excelData.length; index++) {
+      const value = excelData[index]; 
       delete Object.assign(value, {code_item: value['[ITEM_CODE] code article']})['[ITEM_CODE] code article'];
-      delete Object.assign(value, {shop: value['[SHOP] Shop']})['[SHOP] Shop'];
+      delete Object.assign(value, {code_shop: value['[SHOP] Shop']})['[SHOP] Shop'];
       delete Object.assign(value, {quantity: value['[QUANTITY] Quantité']})['[QUANTITY] Quantité'];
-      console.log("value",value);
-      
+
+      if (!value.code_item || !value.code_shop || !value.quantity) {
+        errors['data'].push(excelData[index]);
+        errors.total ++;
+      } else {
+        const product = await getProductByCode(value.code_item);
+        const shop = await getShopByUuidOrCode(value.code_shop);
+        if (!product || !shop) {
+          errors['data'].push(excelData[index]);
+          errors.total ++;
+        } 
+        else {
+          const stockMovment = [{
+            quantity: value.quantity,
+            fk_stock_movment_type_id: stockMovmentType.stock_movment_type_id,
+            fk_product_id: product.product_id,
+            fk_shop_id: shop.shop_id
+          }];
+          if (product.is_serializable) {
+            const {code_item, code_shop, quantity, ...serializations} = value;
+
+            let newSerializations: any = [];
+            const id: string = generateUniqueId();
+            for (const key in serializations) {
+              const code = key.toLocaleUpperCase().includes('IMEI') ? 'IMEI' : key.toLocaleUpperCase().includes('SN') ? 'SERIAL_NUMBER' : '';
+              const type: typeof model.SerializationType = await getSerializationTypeByCode(code);
+              if (code) {
+                newSerializations.push({
+                  serialization_value: serializations[key].toString(),
+                  fk_serialization_type_id: type.serialization_type_id,
+                  fk_product_id: product.product_id,
+                  fk_shop_id: shop.shop_id,
+                  group_id: id
+                })
+              } else {
+                newSerializations.push({
+                  serialization_value: null,
+                  fk_serialization_type_id: null,
+                  fk_product_id: product.product_id,
+                  fk_shop_id: shop.shop_id,
+                  group_id: id
+                })
+              }
+            }
+            let serializationValuesIsValid = false;
+            newSerializations = newSerializations.filter((value: any) => value['fk_serialization_type_id'] != null);
+
+            outerLoop:
+            for (const value of newSerializations ) {
+              const serialization = await getSerializationByProduct_Type_Value(product.product_id, value['fk_serialization_type_id'], value['serialization_value'] )
+              if (serialization ) break outerLoop;
+              if (
+                !serialization && 
+                value['serialization_value'] && 
+                (value['serialization_value'] != null || value['serialization_value'] != '')
+              ) {
+                serializationValuesIsValid = true;
+              }
+            }
+
+            if (!serializationValuesIsValid) {
+              errors['data'].push(excelData[index]);
+              errors.total ++;
+            } else {
+              success++;
+              await createStockMovment(stockMovment, transaction);
+              await createMultipleSerialization(newSerializations, transaction);
+            }
+          } else {
+            success++;
+            await createStockMovment(stockMovment, transaction);
+          }
+        }
+      }
+    }
+
+    await transaction.commit();
+    const timestamp = new Date().getTime();
+    const fileName = timestamp + ".xlsx";
+    let fileEncoded = '';
+    if (errors.total > 0) {
+      generateExcel(errors.data, fileName);
+      fileEncoded = encodeFile(fileName);
+      if (fileEncoded != '') fs.unlinkSync(fileName);
+    }
+    return await {
+      success: success,
+      errors: errors.total,
+      file: fileEncoded
     }
   } catch (error: any) {
-    console.log('stock.servie::getProductQuantity', error);
+    await transaction.rollback()
+    console.log('stock.servie::importStock', error);
     throw new Error(error);
   }
 }
