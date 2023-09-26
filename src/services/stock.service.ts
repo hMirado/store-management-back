@@ -348,19 +348,28 @@ export const importStock = async (base64: string) => {
     let success: number = 0;
     const stockMovmentType = await getStockMovmentTypeByMovment('IN-IMPORT');
     for (let index = 0; index < excelData.length; index++) {
+      const data = excelData[index];
       const value = excelData[index]; 
       delete Object.assign(value, {code_item: value['[ITEM_CODE] code article']})['[ITEM_CODE] code article'];
       delete Object.assign(value, {code_shop: value['[SHOP] Shop']})['[SHOP] Shop'];
       delete Object.assign(value, {quantity: value['[QUANTITY] Quantité']})['[QUANTITY] Quantité'];
-
+      
+      const {code_item, code_shop, quantity, ...serializations} = value;
+      const erreur = {
+        '[ITEM_CODE] code article': !value.code_item ? '' : value.code_item,
+        '[SHOP] Shop': !value.code_shop ? '' : value.code_shop,
+        '[QUANTITY] Quantité': !value.quantity ? '' : value.quantity,
+        ... serializations
+      }
+      
       if (!value.code_item || !value.code_shop || !value.quantity) {
-        errors['data'].push(excelData[index]);
+        errors['data'].push(erreur);
         errors.total ++;
       } else {
         const product = await getProductByCode(value.code_item);
         const shop = await getShopByUuidOrCode(value.code_shop);
         if (!product || !shop) {
-          errors['data'].push(excelData[index]);
+          errors['data'].push(erreur);
           errors.total ++;
         } 
         else {
@@ -371,8 +380,6 @@ export const importStock = async (base64: string) => {
             fk_shop_id: shop.shop_id
           }];
           if (product.is_serializable) {
-            const {code_item, code_shop, quantity, ...serializations} = value;
-
             let newSerializations: any = [];
             const id: string = generateUniqueId();
             for (const key in serializations) {
@@ -413,7 +420,7 @@ export const importStock = async (base64: string) => {
             }
 
             if (!serializationValuesIsValid) {
-              errors['data'].push(excelData[index]);
+              errors['data'].push(erreur);
               errors.total ++;
             } else {
               success++;
@@ -439,7 +446,7 @@ export const importStock = async (base64: string) => {
     }
     return await {
       success: success,
-      errors: errors.total,
+      error: errors.total,
       file: fileEncoded
     }
   } catch (error: any) {
