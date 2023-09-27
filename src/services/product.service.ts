@@ -400,3 +400,61 @@ export const importProduct = async (base64: string) => {
     throw new Error(error);
   }
 }
+
+export const addImage = async (base64: string, product: typeof model.Product) => {
+  try {
+    const base64Type = base64.split(',/')[0].toLocaleLowerCase();
+    let file = ''
+    let type = '';
+    
+    if (base64Type.includes('png;base64')){
+      type = 'png';
+      file = base64.toString().replace(base64Type, "");
+    } else if (base64Type.includes(base64Type)) {
+      type = 'jpeg';
+      file = base64.toString().replace(base64Type, "");
+    } else if (base64Type.includes('jpg;base64')) {
+      type = 'jpg';
+      file = base64.toString().replace(base64Type, "");
+    } 
+
+    const buffer = Buffer.from(file,'base64');
+    const fileName = product.product_uuid + "." + type;
+
+    if (product.image || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
+
+    let productUpdated = await model.Product.update(
+      { image: fileName },
+      {
+        where: {
+          product_uuid: product.product_uuid
+        }
+      }
+    ).then(async() => {
+      fs.writeFileSync(`uploads/images/products/${fileName}`, buffer)
+      return await getProductByUuid(product.product_uuid)
+    });
+    productUpdated.image = encodeFile(`uploads/images/products/${productUpdated.image}`);
+    return await productUpdated;
+  } catch (error: any) {
+    console.error("product.service::updateProduct", error);
+    throw new Error(error);
+  }
+}
+
+export const removeImage = async (product: typeof model.Product) => {
+  try {
+    if (product.image || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
+    return await model.Product.update(
+      { image: null },
+      {
+        where: {
+          product_uuid: product.product_uuid
+        }
+      }
+    );
+  } catch (error: any) {
+    console.error("product.service::removeImage", error);
+    throw new Error(error);
+  }
+}

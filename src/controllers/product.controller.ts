@@ -11,7 +11,9 @@ import {
   updateProduct,
   getProductByUuid,
   getProductByLabel,
-  importProduct
+  importProduct,
+  addImage,
+  removeImage
 } from "../services/product.service";
 import { getShopByUuidOrCode } from "../services/shop.service";
 import { encodeFile } from "../helpers/helper";
@@ -184,6 +186,37 @@ export const exportModelHandler = async (req: Request, res: Response) => {
     return res.status(200).json({status: 200, data: encodedFile, notification: 'Export du modèle effectué.'});
   } catch (error) {
     console.error('product.controller::exportModelHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const addImageHandler = async (req: Request, res: Response) => {
+  try {
+    const img = req.body.file;
+    const productUuid = req.body.product;
+
+    const product = await getProductByUuid(productUuid);
+    if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
+
+    if (!img.includes("data:@file/jpeg;base64,") && !img.includes("data:@file/jpg;base64,") && !img.includes("data:@file/png;base64,"))
+      return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: "Le format de l'image n'est pas pris en charge."});
+
+    const response = await addImage(img, product);
+    return res.status(201).json({status: 201, data: response, notification: 'Image ajouté.'});
+  } catch (error) {
+    console.error('product.controller::addImageHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+export const removeImageHandler = async (req: Request, res: Response) => {
+  try {
+    const productUuid = req.body.product;
+    const product = await getProductByUuid(productUuid);
+    if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
+    const response = await removeImage(product);
+    return res.status(201).json({status: 201, data: response, notification: 'Image supprimer.'});
+  } catch (error) {
+    console.error('product.controller::removeImageHandler', error);
     return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }
