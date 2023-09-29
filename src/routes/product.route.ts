@@ -12,7 +12,8 @@ import {
   getProductByLabelHandler,
   exportModelHandler,
   addImageHandler,
-  removeImageHandler
+  removeImageHandler,
+  getFile
 } from '../controllers/product.controller';
 import { verifyToken } from "../middlewares/auth";
 productRouter.get('/', verifyToken, getProductsHandler);
@@ -26,7 +27,7 @@ productRouter.post('/', verifyToken, createProductWithPriceHandler);
 productRouter.put('/', verifyToken, updateProductHandler);
 productRouter.post('/import', verifyToken, importProductHandler);
 productRouter.get('/export', verifyToken, exportModelHandler);
-productRouter.post('/image', addImageHandler);
-productRouter.put('/image/remove', removeImageHandler);
+productRouter.post('/image', verifyToken, addImageHandler);
+productRouter.put('/image/remove', verifyToken, removeImageHandler);
 
 module.exports = productRouter;

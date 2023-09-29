@@ -19,6 +19,7 @@ const transferRoute = require("./routes/transfer.route");
 const roleRoute = require("./routes/role.route");
 const priceRoute = require("./routes/price.route");
 const saleRoute = require("./routes/sale.route");
+const fileRoute = require("./routes/file.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -50,6 +51,7 @@ app.use("/transfer", transferRoute);
 app.use("/role", roleRoute);
 app.use("/price", priceRoute);
 app.use("/sale", saleRoute);
+app.use("/file", fileRoute);
 
 const port = process.env.PORT;
 app.listen(port, () => {

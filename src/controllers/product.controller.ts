@@ -17,6 +17,7 @@ import {
 } from "../services/product.service";
 import { getShopByUuidOrCode } from "../services/shop.service";
 import { encodeFile } from "../helpers/helper";
+import { url } from "inspector";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
@@ -99,7 +100,9 @@ export const getProductByLabelOrCodeHandler = async (req: Request, res: Response
 
 export const getProductByUuidHandler = async (req: Request, res: Response) => {
   try {
-    const product = await getProductByUuid(req.params.uuid as string);
+    //console.log('\nHOST', req);
+    console.log('\nHOST', req.rawHeaders[1]);
+    const product = await getProductByUuid(req.params.uuid as string, true, req.rawHeaders[1]);
     return res.status(200).json({status: 200, data: product, notification: 'Details de l\'article'});
   } catch (error: any) {
     console.error('product.controller::getProductByLabelOrCodeHandler', error);
@@ -215,6 +218,15 @@ export const removeImageHandler = async (req: Request, res: Response) => {
     if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
     const response = await removeImage(product);
     return res.status(201).json({status: 201, data: response, notification: 'Image supprimer.'});
+  } catch (error) {
+    console.error('product.controller::removeImageHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getFile = async (req: Request, res: Response) => {
+  try {
+    return res.download('./uploads/images/products/0bbd82ac-dbbe-4565-9b45-06e124a8a613.jpeg')
   } catch (error) {
     console.error('product.controller::removeImageHandler', error);
     return res.status(500).json({ error: error, notification: 'Erreur système'});
