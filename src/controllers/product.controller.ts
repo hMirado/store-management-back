@@ -100,7 +100,6 @@ export const getProductByLabelOrCodeHandler = async (req: Request, res: Response
 
 export const getProductByUuidHandler = async (req: Request, res: Response) => {
   try {
-    //console.log('\nHOST', req);
     console.log('\nHOST', req.rawHeaders[1]);
     const product = await getProductByUuid(req.params.uuid as string, true, req.rawHeaders[1]);
     return res.status(200).json({status: 200, data: product, notification: 'Details de l\'article'});
@@ -201,7 +200,7 @@ export const addImageHandler = async (req: Request, res: Response) => {
     const product = await getProductByUuid(productUuid);
     if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
 
-    if (!img.includes("data:@file/jpeg;base64,") && !img.includes("data:@file/jpg;base64,") && !img.includes("data:@file/png;base64,"))
+    if (!img.includes("data:image/jpeg;base64,") && !img.includes("data:image/jpg;base64,") && !img.includes("data:image/png;base64,"))
       return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: "Le format de l'image n'est pas pris en charge."});
 
     const response = await addImage(img, product);

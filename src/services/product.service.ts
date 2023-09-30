@@ -431,9 +431,10 @@ export const addImage = async (base64: string, product: typeof model.Product) =>
     } 
 
     const buffer = Buffer.from(file,'base64');
-    const fileName = product.product_uuid + "." + type;
+    const timestamp = new Date().getTime();
+    const fileName = product.product_uuid + '_' + timestamp + "." + type;
 
-    if (product.image || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
+    if (product.image != null && product.image != '')  fs.unlinkSync(`uploads/images/products/${product.image}`);
 
     let productUpdated = await model.Product.update(
       { image: fileName },
@@ -443,16 +444,16 @@ export const addImage = async (base64: string, product: typeof model.Product) =>
         }
       }
     ).then(async() => {
-      fs.writeFileSync(`uploads/images/products/${fileName}`, buffer)
-      return await getProductByUuid(product.product_uuid)
+      fs.writeFileSync(`uploads/images/products/${fileName}`, buffer);
+      return await getProductByUuid(product.product_uuid);
     });
 
-    const hasImage = (product.image && product.image != '') ? true: false
+    const hasImage = (productUpdated.image && productUpdated.image != '') ? true: false
     const image = {
       hasImage: hasImage,
-      path: hasImage ? `/file/image/products/${product.image }` : ''
+      path: hasImage ? `/file/image/products/${fileName}` : ''
     }
-    delete product.image;
+    
     return await {product, image};
   } catch (error: any) {
     console.error("product.service::updateProduct", error);
@@ -462,7 +463,7 @@ export const addImage = async (base64: string, product: typeof model.Product) =>
 
 export const removeImage = async (product: typeof model.Product) => {
   try {
-    if (product.image || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
+    if (product.image != null || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
     const productUpdated = await model.Product.update(
       { image: null },
       {
