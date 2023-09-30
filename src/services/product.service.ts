@@ -7,6 +7,7 @@ import { createMuliplePrice } from "./price.service";
 const sequelize = require("../config/db.config");
 import { convertToExcel, generateExcel, encodeFile } from "../helpers/helper"
 import { getCategoryByCode } from "./category.service";
+import path, { dirname } from "path";
 const fs = require('fs');
 
 export const getProductsOld = async (req: Request, categoryId: string = '') => {
@@ -152,15 +153,26 @@ export const getProductById = async (id: number) => {
   }
 }
 
-export const getProductByUuid = async (uuid: string) => {
+export const getProductByUuid = async (uuid: string, withImage: boolean = false, hostName: string = '') => {
   try {
-    return await model.Product.findOne({
+    const product = await model.Product.findOne({
       include: [
         {model: model.Category},
         {model: model.Price}
       ],
       where: { product_uuid: uuid }
-    })
+    });
+    if (withImage) {  
+      const hasImage = (product.image && product.image != '') ? true: false
+      const image = {
+        hasImage: hasImage,
+        path: hasImage ? `/file/image/products/${product.image }` : ''
+      }
+      delete product.image;
+      return await {product, image};
+    } else {
+      return await product;
+    }
   } catch (error) {
     throw error;
   }
@@ -397,6 +409,77 @@ export const importProduct = async (base64: string) => {
     }
   } catch (error: any) {
     console.error("product.service::importProduct", error);
+    throw new Error(error);
+  }
+}
+
+export const addImage = async (base64: string, product: typeof model.Product) => {
+  try {
+    const base64Type = base64.split(',/')[0].toLocaleLowerCase();
+    let file = ''
+    let type = '';
+    
+    if (base64Type.includes('png;base64')){
+      type = 'png';
+      file = base64.toString().replace(base64Type, "");
+    } else if (base64Type.includes(base64Type)) {
+      type = 'jpeg';
+      file = base64.toString().replace(base64Type, "");
+    } else if (base64Type.includes('jpg;base64')) {
+      type = 'jpg';
+      file = base64.toString().replace(base64Type, "");
+    } 
+
+    const buffer = Buffer.from(file,'base64');
+    const timestamp = new Date().getTime();
+    const fileName = product.product_uuid + '_' + timestamp + "." + type;
+
+    if (product.image != null && product.image != '')  fs.unlinkSync(`uploads/images/products/${product.image}`);
+
+    let productUpdated = await model.Product.update(
+      { image: fileName },
+      {
+        where: {
+          product_uuid: product.product_uuid
+        }
+      }
+    ).then(async() => {
+      fs.writeFileSync(`uploads/images/products/${fileName}`, buffer);
+      return await getProductByUuid(product.product_uuid);
+    });
+
+    const hasImage = (productUpdated.image && productUpdated.image != '') ? true: false
+    const image = {
+      hasImage: hasImage,
+      path: hasImage ? `/file/image/products/${fileName}` : ''
+    }
+    
+    return await {product, image};
+  } catch (error: any) {
+    console.error("product.service::updateProduct", error);
+    throw new Error(error);
+  }
+}
+
+export const removeImage = async (product: typeof model.Product) => {
+  try {
+    if (product.image != null || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
+    const productUpdated = await model.Product.update(
+      { image: null },
+      {
+        where: {
+          product_uuid: product.product_uuid
+        }
+      }
+    );
+    const image = {
+      hasImage: false,
+      path: '',
+    }
+    delete productUpdated.image;
+    return await {product, image};
+  } catch (error: any) {
+    console.error("product.service::removeImage", error);
     throw new Error(error);
   }
 }
