@@ -48,7 +48,7 @@ export const sell = async (shop: number, user: number, product: number, serializ
     return created;
   } catch (error: any) {
     await transaction.rollback();
-    console.log("\n sale.service::sale", error);
+    process.stderr.write("\n sale.service::sale", error.toString());
     throw new Error(error);
   }
 }
@@ -141,5 +141,86 @@ export const countSale = async (shop: number|null = null) => {
   } catch (error: any) {
     console.log("\n sale.service::countSale", error);
     throw new Error(error);
+  }
+}
+
+export const getSaleGraphData = async (req: Request) => {
+  const query = req.query;
+  let replacements: Object = {};
+  let saleDate: string = "DATE_FORMAT(s.createdAt, '%d/%m/%Y')";
+  if (query.groupByDate) {
+    const group = query.groupByDate as string;
+    saleDate = group.toUpperCase() == "Y" ? "YEAR(s.createdAt)" : group.toUpperCase() === "M" ? "DATE_FORMAT(s.createdAt,'%m/%Y')" : "DATE_FORMAT(s.createdAt, '%d/%m/%Y')";
+  }
+  let groupBy = " GROUP BY 1, shop "
+  let request = `SELECT 
+              ${saleDate} as saleDate, CONCAT(sh.shop_location, ' ', COALESCE(sh.shop_box, '')) as shop,
+              SUM(s.sale_price) / 100 as price 
+              FROM sales s 
+              INNER JOIN products p ON p.product_id = s.fk_product_id 
+              INNER JOIN shops sh ON s.fk_shop_id = sh.shop_id 
+              WHERE 1 = 1 
+              `;
+  if (query.startDate && query.endDate) {
+    const startDate = query.startDate;
+    const endDate = query.endDate;
+    if ((new Date(startDate as string) > new Date(endDate as string))) {
+      process.stderr.write("la date de début doit-être inferieur à la date de fin");
+      throw "la date de début doit-être inferieur à la date de fin";
+    } else {
+      request += ` AND DATE(s.createdAt) BETWEEN DATE(:startDate) AND DATE(:endDate) `;
+      replacements = { ... replacements, ...{startDate: startDate, endDate: endDate}};
+    }
+  }
+
+  if (query.shop) {
+    request += ` AND sh.shop_uuid = ":shop"`;
+    replacements = { ... replacements, ...{shop: query.shop}};
+    groupBy += " ,s.fk_shop_id ";
+  }
+  if (query.product) {
+    request += ` AND p.product_uuid = ":product" `;
+    replacements = { ... replacements, ...{product: query.product}};
+    groupBy += " ,p.product_id ";
+  }
+
+  request += groupBy;
+
+  if (query.groupByDate) {
+    const group = query.groupByDate as string;
+    request += ` , ${group.toUpperCase() === "Y" ? "YEAR(saleDate)" : group.toUpperCase() === "M" ? "MONTH(saleDate)" : group.toUpperCase() === "W" ? "WEEK(saleDate)" : "saleDate"}`;
+  }
+  request += ' ORDER BY saleDate ASC, shop ASC'
+  try {
+    const values =  await sequelize.query(
+      request,
+      {
+        replacements: replacements,
+        type: QueryTypes.SELECT
+      }
+    );
+
+    let sales: any[] = [];
+    values.forEach((value: any) => {
+      const series = {
+        name: value['saleDate'],
+        value: +value['price'].toLocaleString()
+      };
+      const isIn = sales.find(({name}) => name.toUpperCase() == value['shop'].toUpperCase());
+      if (!isIn) {
+        const data = {
+          name: value['shop'],
+          series: [ series ]
+        }
+        sales.push(data);
+      } else {
+        const objIndex = sales.findIndex((obj => obj["name"].toUpperCase() == value['shop'].toUpperCase()));
+        sales[objIndex]['series'].push(series)
+      }
+    });
+    return sales;
+  } catch (error: any) {
+    process.stderr.write("\n sale.service/getSaleGraphData : " + error.toString());
+    throw error.toString();
   }
 }

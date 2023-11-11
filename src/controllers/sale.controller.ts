@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getShopByUuidOrCode } from "../services/shop.service";
-import { sell, getSelled, countSale } from "../services/sale.service";
+import { sell, getSelled, countSale, getSaleGraphData } from "../services/sale.service";
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid } from "../services/product.service";
 import { getSerializationByGroup } from "../services/serialization.service";
@@ -67,5 +67,19 @@ export const countSaleHandler = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getSaleGraphDataHandler = async (req: Request, res: Response) => {
+  try {
+    if (req.query.shop) {      
+      const shop: typeof model.shop = await getShopByUuidOrCode(req.query.shop as string);
+      if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
+    }
+    const data: any = await getSaleGraphData(req);
+    return res.status(200).json({status: 200, data, notification: 'Données du graphe'});
+  } catch (error: any) {
+    process.stderr.write("sale.controller/getSaleGraphDataHandler : " + error.toString())
+    return res.status(500).json({ error: error.toString(), notification: 'Erreur système'});
   }
 }
