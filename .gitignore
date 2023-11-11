@@ -1,4 +1,4 @@
 node_modules
 .idea
-uploads/images/products
-uploads/images/users/*
+src/uploads/images/products
+src/uploads/images/users

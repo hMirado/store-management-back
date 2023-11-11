@@ -166,7 +166,7 @@ export const getProductByUuid = async (uuid: string, withImage: boolean = false,
       const hasImage = (product.image && product.image != '') ? true: false
       const image = {
         hasImage: hasImage,
-        path: hasImage ? `/file/image/products/${product.image }` : ''
+        path: hasImage ? `products/${product.image }` : ''
       }
       delete product.image;
       return await {product, image};
@@ -434,7 +434,7 @@ export const addImage = async (base64: string, product: typeof model.Product) =>
     const timestamp = new Date().getTime();
     const fileName = product.product_uuid + '_' + timestamp + "." + type;
 
-    if (product.image != null && product.image != '')  fs.unlinkSync(`uploads/images/products/${product.image}`);
+    if (product.image != null && product.image != '')  fs.unlinkSync(`src/uploads/images/products/${product.image}`);
 
     let productUpdated = await model.Product.update(
       { image: fileName },
@@ -444,14 +444,14 @@ export const addImage = async (base64: string, product: typeof model.Product) =>
         }
       }
     ).then(async() => {
-      fs.writeFileSync(`uploads/images/products/${fileName}`, buffer);
+      fs.writeFileSync(`src/uploads/images/products/${fileName}`, buffer);
       return await getProductByUuid(product.product_uuid);
     });
 
     const hasImage = (productUpdated.image && productUpdated.image != '') ? true: false
     const image = {
       hasImage: hasImage,
-      path: hasImage ? `/file/image/products/${fileName}` : ''
+      path: hasImage ? `products/${fileName}` : ''
     }
     
     return await {product, image};
@@ -463,7 +463,7 @@ export const addImage = async (base64: string, product: typeof model.Product) =>
 
 export const removeImage = async (product: typeof model.Product) => {
   try {
-    if (product.image != null || product.image != '') fs.unlinkSync(`uploads/images/products/${product.image}`);
+    if (product.image != null || product.image != '') fs.unlinkSync(`src/uploads/images/products/${product.image}`);
     const productUpdated = await model.Product.update(
       { image: null },
       {
