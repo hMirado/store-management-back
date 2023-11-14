@@ -147,10 +147,10 @@ export const countSale = async (shop: number|null = null) => {
 export const getSaleGraphData = async (req: Request) => {
   const query = req.query;
   let replacements: Object = {};
-  let saleDate: string = "DATE_FORMAT(s.createdAt, '%d/%m/%Y')";
+  let saleDate: string = "DATE_FORMAT(s.createdAt, '%Y-%m-%d')";
   if (query.groupByDate) {
     const group = query.groupByDate as string;
-    saleDate = group.toUpperCase() == "Y" ? "YEAR(s.createdAt)" : group.toUpperCase() === "M" ? "DATE_FORMAT(s.createdAt,'%m/%Y')" : "DATE_FORMAT(s.createdAt, '%d/%m/%Y')";
+    saleDate = group.toUpperCase() == "Y" ? "YEAR(s.createdAt)" : group.toUpperCase() === "M" ? "DATE_FORMAT(s.createdAt,'%Y-%m')" : "DATE_FORMAT(s.createdAt, '%Y/%m/%d')";
   }
   let groupBy = " GROUP BY 1, shop "
   let request = `SELECT 
@@ -166,20 +166,20 @@ export const getSaleGraphData = async (req: Request) => {
     const endDate = query.endDate;
     if ((new Date(startDate as string) > new Date(endDate as string))) {
       process.stderr.write("la date de début doit-être inferieur à la date de fin");
-      throw "la date de début doit-être inferieur à la date de fin";
+      throw "La date de début doit-être inferieur à la date de fin";
     } else {
       request += ` AND DATE(s.createdAt) BETWEEN DATE(:startDate) AND DATE(:endDate) `;
       replacements = { ... replacements, ...{startDate: startDate, endDate: endDate}};
     }
   }
 
-  if (query.shop) {
-    request += ` AND sh.shop_uuid = ":shop"`;
+  if (query.shop && query.shop != '') {
+    request += ` AND sh.shop_uuid = :shop`;
     replacements = { ... replacements, ...{shop: query.shop}};
     groupBy += " ,s.fk_shop_id ";
   }
   if (query.product) {
-    request += ` AND p.product_uuid = ":product" `;
+    request += ` AND p.product_uuid = :product `;
     replacements = { ... replacements, ...{product: query.product}};
     groupBy += " ,p.product_id ";
   }
@@ -202,10 +202,12 @@ export const getSaleGraphData = async (req: Request) => {
 
     let sales: any[] = [];
     values.forEach((value: any) => {
+      const maDate = new Date(value['saleDate'])
       const series = {
-        name: value['saleDate'],
+        name: maDate.toLocaleDateString("fr"),
         value: +value['price'].toLocaleString()
       };
+      
       const isIn = sales.find(({name}) => name.toUpperCase() == value['shop'].toUpperCase());
       if (!isIn) {
         const data = {
@@ -215,7 +217,7 @@ export const getSaleGraphData = async (req: Request) => {
         sales.push(data);
       } else {
         const objIndex = sales.findIndex((obj => obj["name"].toUpperCase() == value['shop'].toUpperCase()));
-        sales[objIndex]['series'].push(series)
+        sales[objIndex]['series'].push(series);
       }
     });
     return sales;
