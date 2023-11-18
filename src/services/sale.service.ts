@@ -3,6 +3,7 @@ import { QueryTypes } from "sequelize";
 import { updateSerializationIsSold } from "./serialization.service";
 import { getStockMovmentTypeByMovment } from "./stock-movment-type.service";
 import { createStockMovment } from "./stock.service";
+import { getMonthNameByNumber } from "../helpers/helper";
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
 
@@ -223,6 +224,78 @@ export const getSaleGraphData = async (req: Request) => {
     return sales;
   } catch (error: any) {
     process.stderr.write("\n sale.service/getSaleGraphData : " + error.toString());
+    throw error.toString();
+  }
+}
+
+export const getSaleCompareData = async (req: Request, shopId: number|null = null) => {
+  const query = req.query;
+  let now: string = "CURDATE()";
+  let last: string = "(CURDATE() - INTERVAL 1 DAY)";
+  let tLast: string = "(CURDATE() - INTERVAL 2 DAY)";
+  let createdAt: string = "s2.createdAt";
+
+  let whereClause = "";
+  if (shopId != null && shopId > 0) whereClause += ` AND s.shop_id = ${shopId}`;
+  try {
+    if (query.perBy == 'month') {
+      now = "MONTH(CURDATE())";
+      last = "(MONTH(CURDATE()) - 1)";
+      tLast = "(MONTH(CURDATE()) - 2)";
+      createdAt = "MONTH(s2.createdAt)";
+    } else if (query.perBy == 'year') {
+      now = "YEAR(CURDATE())";
+      last = "(YEAR(CURDATE()) - 1)";
+      tLast = "(YEAR(CURDATE()) - 2)";
+      createdAt = "YEAR(s2.createdAt)";
+    }
+
+    let select = `SELECT ${tLast} moment, CONCAT(s.shop_location, ' ', COALESCE(s.shop_box, '')) name, COALESCE(SUM(S2.sale_price)/100, 0) AS price  FROM shops s 
+      LEFT JOIN sales s2 ON s.shop_id = s2.fk_shop_id AND ${createdAt} = ${tLast} 
+      WHERE 1 = 1 ${whereClause} 
+      GROUP BY s.shop_box, s.shop_location
+      UNION ALL 
+      SELECT ${last} moment, CONCAT(s.shop_location, ' ', COALESCE(s.shop_box, '')) name, COALESCE(SUM(S2.sale_price)/100, 0) AS price  FROM shops s 
+      LEFT JOIN sales s2 ON s.shop_id = s2.fk_shop_id AND ${createdAt} = ${last} 
+      WHERE 1 = 1 ${whereClause} 
+      GROUP BY s.shop_box, s.shop_location
+      UNION ALL 
+      SELECT ${now} moment, CONCAT(s.shop_location, ' ', COALESCE(s.shop_box, '')) name, COALESCE(SUM(S2.sale_price)/100, 0) AS price FROM shops s 
+      LEFT JOIN sales s2 ON s.shop_id = s2.fk_shop_id AND ${createdAt} = ${now} 
+      WHERE 1 = 1 ${whereClause} 
+      GROUP BY s.shop_box, s.shop_location 
+    `;
+
+    let sales: any[] = [];
+    const values =  await sequelize.query(
+      select, {
+        type: QueryTypes.SELECT,
+      }
+    );
+    values.forEach((value: any) => {
+      const shopName = value['name'];
+      const date = (query.perBy == 'year') ? value['moment'] : ((query.perBy == 'month') ? getMonthNameByNumber(value['moment']) : new Date(value['moment']).toLocaleDateString("fr"));
+      
+      const series = {
+        name: date,
+        value: +value['price'].toLocaleString()
+      }
+      const isIn = sales.find(({name}) => name.toUpperCase() == shopName.toUpperCase());
+      if (!isIn) {
+        const data = {
+          name: shopName,
+          series: [series]
+        }
+        sales.push(data)
+      } else {
+        const objIndex = sales.findIndex((obj => obj["name"].toUpperCase() == shopName.toUpperCase()));
+        sales[objIndex]['series'].push(series);
+      }
+    })
+
+    return sales;
+  } catch (error: any) {
+    process.stderr.write("\n sale.service/getSaleCompareData : " + error.toString());
     throw error.toString();
   }
 }

@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { getShopByUuidOrCode } from "../services/shop.service";
-import { sell, getSelled, countSale, getSaleGraphData } from "../services/sale.service";
+import { sell, getSelled, countSale, getSaleGraphData, getSaleCompareData } from "../services/sale.service";
 import { findUserByUuid } from "../services/user.service";
 import { getProductByUuid } from "../services/product.service";
 import { getSerializationByGroup } from "../services/serialization.service";
 import { getProductStockQuantity } from "../services/stock.service";
+import { ADMIN } from "../config/constants";
 const model = require("../models/index");
 
 export const sellHandler = async (req: Request, res: Response) => {
@@ -77,6 +78,19 @@ export const getSaleGraphDataHandler = async (req: Request, res: Response) => {
       if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Shop inexistante.'});
     }
     const data: any = await getSaleGraphData(req);
+    return res.status(200).json({status: 200, data, notification: 'Données du graphe'});
+  } catch (error: any) {
+    process.stderr.write("sale.controller/getSaleGraphDataHandler : " + error.toString())
+    return res.status(500).json({ error: error.toString(), notification: 'Erreur système'});
+  }
+}
+
+export const getSaleCompareDataHandler = async (req: Request, res: Response) => {
+  try {
+    const tokenData = res.locals.user
+    let shopId: number|null = (tokenData.role.role_key != ADMIN) ? tokenData.shops[0].shop_id : null
+    
+    const data: any = await getSaleCompareData(req, shopId);
     return res.status(200).json({status: 200, data, notification: 'Données du graphe'});
   } catch (error: any) {
     process.stderr.write("sale.controller/getSaleGraphDataHandler : " + error.toString())
