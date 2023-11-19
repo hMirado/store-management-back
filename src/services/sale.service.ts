@@ -6,6 +6,7 @@ import { createStockMovment } from "./stock.service";
 import { getMonthNameByNumber } from "../helpers/helper";
 const model = require("../models/index");
 const sequelize = require("../config/db.config");
+const Op = sequelize.Op;
 
 export const sell = async (shop: number, user: number, product: number, serialization: string|null = null, price: number, quantity: number = 1) => {
   const transaction = await sequelize.transaction();
@@ -145,7 +146,7 @@ export const countSale = async (shop: number|null = null) => {
   }
 }
 
-export const getSaleGraphData = async (req: Request) => {
+export const getSaleGraphData = async (req: Request, shopId: number|null = null) => {
   const query = req.query;
   let replacements: Object = {};
   let saleDate: string = "DATE_FORMAT(s.createdAt, '%Y-%m-%d')";
@@ -174,11 +175,16 @@ export const getSaleGraphData = async (req: Request) => {
     }
   }
 
-  if (query.shop && query.shop != '') {
+  if (shopId != null && shopId > 0) {
+    request += ` AND sh.shop_uuid = :shop`;
+    replacements = { ... replacements, ...{shopId}};
+    groupBy += " ,s.fk_shop_id ";
+  } else if (query.shop && query.shop != '') {
     request += ` AND sh.shop_uuid = :shop`;
     replacements = { ... replacements, ...{shop: query.shop}};
     groupBy += " ,s.fk_shop_id ";
   }
+  
   if (query.product) {
     request += ` AND p.product_uuid = :product `;
     replacements = { ... replacements, ...{product: query.product}};
@@ -294,6 +300,23 @@ export const getSaleCompareData = async (req: Request, shopId: number|null = nul
     })
 
     return sales;
+  } catch (error: any) {
+    process.stderr.write("\n sale.service/getSaleCompareData : " + error.toString());
+    throw error.toString();
+  }
+}
+
+export const getTodayTotalSale = async (shopId: number|null = null) => {
+  let whereClause: any = { 'createdAt': sequelize.fn('CURDATE') };
+  if (shopId != null && shopId > 0) whereClause = { ...whereClause, 'fk_shop_id': shopId}
+  try {
+    return await model.Sale.findOne({
+      attributes: [
+        [ sequelize.fn('COALESCE', sequelize.fn('sum', sequelize.col('sale_price')), 0), 'total_price'],
+        [ sequelize.fn('COALESCE', sequelize.fn('sum', sequelize.col('sale_quantity')), 0), 'total_quantity'],
+      ],
+      where: whereClause
+    });
   } catch (error: any) {
     process.stderr.write("\n sale.service/getSaleCompareData : " + error.toString());
     throw error.toString();
