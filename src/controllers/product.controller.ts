@@ -100,7 +100,6 @@ export const getProductByLabelOrCodeHandler = async (req: Request, res: Response
 
 export const getProductByUuidHandler = async (req: Request, res: Response) => {
   try {
-    console.log('\nHOST', req.rawHeaders[1]);
     const product = await getProductByUuid(req.params.uuid as string, true, req.rawHeaders[1]);
     return res.status(200).json({status: 200, data: product, notification: 'Details de l\'article'});
   } catch (error: any) {

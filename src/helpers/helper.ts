@@ -52,3 +52,21 @@ export const convertToExcel = (base64: string) => {
   const sheetNamesList = workbook.SheetNames;
   return XLSX.utils.sheet_to_json(workbook.Sheets[sheetNamesList[0]]);
 }
+
+export const getMonthNameByNumber = (number: number) => {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return months[number];
+}
