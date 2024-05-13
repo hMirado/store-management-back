@@ -8,11 +8,11 @@ export const startSessionHandler = async (req: Request, res: Response) => {
   const value = req.body;
   try {
     const user = res.locals.user;
-    const shop: typeof model.shop = await getShopByUuidOrCode(value.shop_uuid);
+    const shop: typeof model.shop = await getShopByUuidOrCode(value.shop);
     if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée.', notification: 'Shop inexistante.'});
     
     const session = await startSession(value.cash_float, user.user_id, shop.shop_id);
-    return res.status(200).json({status: 200, data: session, notification: 'Votre session est démarré.'});
+    return res.status(201).json({status: 201, data: session, notification: 'Votre session est démarré.'});
   } catch (error: any) {
     console.log(error)
     return res.status(500).json({ error: error.toString(), notification: "Erreur système!" });
