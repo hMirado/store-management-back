@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { Op } from "sequelize";
+import { Op, where } from "sequelize";
 const model = require("../models/index");
 
 export const getShopByUuidOrCode = async (value: string) => {
@@ -70,6 +70,26 @@ export const openShop = async (shopUuid: string, status: boolean) => {
     return await getShopByUuidOrCode(shopUuid)
   } catch (error: any) {
     console.error('shop.service::openShop', error)
+    throw new Error(error);
+  }
+}
+
+export const getShopsByUser = async (userId: number) =>{
+  try {
+    return await model.Shop.findAll({
+      attributes: ['shop_id', 'shop_uuid', 'shop_name', 'shop_location', 'shop_box'],
+      include: {
+        model: model.User,
+        attributes: ['user_uuid', 'first_name', 'last_name'],
+        where: {
+          user_id: userId
+        }
+      },
+      where: {
+        deletedAt: null
+      }
+    })
+  }catch (error: any) {
     throw new Error(error);
   }
 }

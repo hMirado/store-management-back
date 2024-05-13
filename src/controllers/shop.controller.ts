@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { getShops, getShopByStatus, getShopByUuidOrCode, openShop } from "../services/shop.service";
+import { getShops, getShopByStatus, getShopByUuidOrCode, openShop, getShopsByUser } from "../services/shop.service";
+import { findUserByUuid } from "../services/user.service";
 const model = require("../models/index");
 
 /**
@@ -139,8 +140,8 @@ export const getShopByStatusHandler = async (req: Request, res: Response) => {
 	try {
 		const shop: typeof model.Shop = await getShopByStatus(Boolean(status))
 		return res.status(200).json({ status: 200, data: shop, notification: 'Liste des boutiques.'});
-	} catch (error) {
-		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système'});
+	} catch (error: any) {
+		return res.status(500).json({ status: 500, error: error.toString(), notification: 'Erreur système'});
 	}
 }
 
@@ -154,7 +155,22 @@ export const openShopHandler = async (req: Request, res: Response) => {
 		if (shop && shop.is_opened == status) return res.status(200).json({ status: 200, data: shop, notification: `shop déjà ${notification}`});
 		const update = await openShop(shopUuid, status); 
 		return res.status(201).json({status: 201, data: {status: update}, notification: `shop ${notification}`});
-	} catch (error) {
-		return res.status(500).json({ status: 500, error: error, notification: 'Erreur système'});
+	} catch (error: any) {
+		return res.status(500).json({ status: 500, error: error.toString(), notification: 'Erreur système'});
+	}
+}
+
+
+export const getShopByUserHandler = async (req: Request, res: Response) => {
+	try {
+		const userUuid: string = req.params.user;
+    if (!userUuid) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur non spécifié.'});
+
+    const user = await findUserByUuid(userUuid);
+    if (!user) return res.status(404).json({ status: 404, error: 'La syntaxe de la requête est erronée.', notification: 'Utilisateur inexistant.'});
+		const shops = await getShopsByUser(user.user_id);
+		return res.status(200).json({status: 200, data: shops, notification: `Shop affecté a l'utilisateur: ${user.first_name} ${user.last_name}`});
+	} catch (error: any) {
+		return res.status(500).json({ status: 500, error: error.toString(), notification: 'Erreur système'});
 	}
 }
