@@ -68,5 +68,5 @@ export const getMonthNameByNumber = (number: number) => {
     "November",
     "December",
   ];
-  return months[number];
+  return months[number - 1];
 }

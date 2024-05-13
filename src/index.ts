@@ -20,6 +20,7 @@ const roleRoute = require("./routes/role.route");
 const priceRoute = require("./routes/price.route");
 const saleRoute = require("./routes/sale.route");
 const fileRoute = require("./routes/file.route");
+const sessionRoute = require("./routes/session.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -52,6 +53,7 @@ app.use("/role", roleRoute);
 app.use("/price", priceRoute);
 app.use("/sale", saleRoute);
 app.use("/file", fileRoute);
+app.use("/session", sessionRoute);
 
 const port = process.env.PORT;
 app.listen(port, () => {

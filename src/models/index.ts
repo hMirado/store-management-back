@@ -25,6 +25,7 @@ import { Payment } from './payment.model';
 import { Cart } from './cart.model';
 import { CartProduct } from './cart-product.model';
 import { Sale } from './sale.model';
+import { Session } from './session-model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -84,7 +85,6 @@ Product.belongsTo(Category, {
   },
   targetKey: "category_id",
 });
-
 
 /**
  * @summary: PRODUCT & ATTRIBUTE
@@ -708,6 +708,39 @@ Sale.belongsTo(User, {
   targetKey: "user_id"
 });
 
+/**
+ * @summary: Session, User, Shop
+ */
+
+User.hasMany(Session, {
+  foreignKey: {
+    name: 'fk_user_id',
+    allowNull: false
+  },
+  source_key: 'user_id'
+});
+Session.belongsTo(User, {
+  foreignKey: {
+    name: "fk_user_id",
+    allowNull: false
+  },
+  targetKey: "user_id",
+})
+
+Shop.hasMany(Session, {
+  foreignKey: {
+    name: 'fk_shop_id',
+    allowNull: false
+  },
+  source_key: 'shop_id'
+});
+Session.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id",
+})
 
 module.exports = { 
   Company, 
@@ -735,5 +768,6 @@ module.exports = {
   Payment,
   Cart,
   CartProduct,
-  Sale
+  Sale,
+  Session
 };
