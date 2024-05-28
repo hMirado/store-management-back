@@ -8,6 +8,7 @@ const sequelize = require("../config/db.config");
 import { convertToExcel, generateExcel, encodeFile } from "../helpers/helper"
 import { getCategoryByCode } from "./category.service";
 import path, { dirname } from "path";
+import { where } from "sequelize";
 const fs = require('fs');
 
 export const getProductsOld = async (req: Request, categoryId: string = '') => {
@@ -116,7 +117,10 @@ export const getProducts = async (req: Request, categoryId: string = '') => {
       const size = req.query.size ? req.query.size : 10;
       const { limit, offset } = getPagination(page, +size);
       const products: typeof model.Product = await model.Product.findAndCountAll({
-        include: model.Category,
+        include: [
+          { model: model.Category },
+          { model: model.Stock }
+        ],
         where: conditions,
         offset,
         limit,
@@ -198,15 +202,91 @@ export const getProductByLabel = async (label: string) => {
   }
 }
 
-export const getSaleProducts = async (req: Request) => {
+export const getSaleProducts = async (req: Request, shop: number) => {
+  let conditions: any = {
+
+  };
+  if (req.query.category && req.query.category != '') conditions['fk_category_id'] = +req.query.category
+  if (req.query.search && req.query.search != '') {
+    conditions[Op.or] = [
+        {
+          label: { [ Op.like ]: `%${req.query.search}%` }
+        },
+        {
+          code: { [ Op.like ]: `%${req.query.search}%` }
+        }
+      ]
+  }
   try {
-    return await model.Product.findAll({
-      include: {
-        model: model.Category
-      }
-    });
-  } catch (error) {
-    throw error;
+    if (req.query.paginate && req.query.paginate == '1') {
+      const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
+      const size = req.query.size ? req.query.size : 10;
+      const { limit, offset } = getPagination(page, +size);
+      const products: typeof model.Product = await model.Product.findAndCountAll({
+        include: [
+          { 
+            model: model.Category,
+            attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] }
+          },
+          { 
+            model: model.Stock,
+            attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt', 'fk_shop_id', 'fk_product_id'] },
+            where: {
+              fk_shop_id: shop
+            },
+            required: false
+          },
+          {
+            model: model.Price,
+            where: {
+              fk_shop_id: shop
+            }
+          }
+        ],
+        where: conditions,
+        offset,
+        limit,
+        distinct: true,
+        order: [
+          ['label', 'ASC']
+        ],
+      });
+
+      let formatedProducts: typeof model.Product = [];
+      products.rows.forEach((product: typeof model.Product) => {
+        const stock = product.stocks.length > 0 ? product.stocks[0].quantity : 0;
+        const prd = {
+          product_id: product.product_id,
+          product_uuid: product.product_uuid,
+          code: product.code,
+          label: product.label,
+          is_serializable: product.is_serializable,
+          image: product.image,
+          fk_category_id: product.fk_category_id,
+          category: product.category,
+          stock: stock,
+          price: product.prices[0].ttc_price / 100,
+        }
+
+        formatedProducts.push(prd)
+      })
+      
+
+      return getPagingData({count: products.count, rows: formatedProducts}, +page, +size);
+    } else {
+      return await model.Product.findAll(
+        {
+          include: [
+            { model: model.Category },
+            { model: model.Stock }
+          ],
+          where: conditions
+        }
+      );
+    }
+  } catch (error: any) {
+    console.error("product.service::getProducts", error);
+    throw new Error(error);
   }
 }
 

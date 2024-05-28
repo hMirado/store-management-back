@@ -45,8 +45,14 @@ export const sessionByUuid = async (uuid: string) => {
   try {
     return await model.Session.findOne({
       include: [
-        {model: model.User},
-        {model: model.Shop}
+        {
+          model: model.User,
+          attributes: { exclude: ['token', 'password', 'email', 'createdAt', 'deletedAt', 'fk_role_id', 'phone_number', 'updatedAt'] },
+        },
+        {
+          model: model.Shop,
+          attributes: { exclude: ['is_opened', 'fk_company_id', 'status', 'createdAt', 'deletedAt', 'updatedAt'] },
+        }
       ],
       where: { session_uuid: uuid }
     });
@@ -58,6 +64,16 @@ export const sessionByUuid = async (uuid: string) => {
 export const userSession = async (userId: string) => {
   try {
     return await model.Session.findOne({
+      include: [
+        {
+          model: model.User,
+          attributes: { exclude: ['token', 'password', 'email', 'createdAt', 'deletedAt', 'fk_role_id', 'phone_number', 'updatedAt'] },
+        },
+        {
+          model: model.Shop,
+          attributes: { exclude: ['is_opened', 'fk_company_id', 'status', 'createdAt', 'deletedAt', 'updatedAt'] },
+        }
+      ],
       where: { 
         fk_user_id: userId ,
         is_started: 1

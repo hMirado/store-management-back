@@ -13,7 +13,8 @@ import {
   getProductByLabel,
   importProduct,
   addImage,
-  removeImage
+  removeImage,
+  getSaleProducts
 } from "../services/product.service";
 import { getShopByUuidOrCode } from "../services/shop.service";
 import { encodeFile } from "../helpers/helper";
@@ -79,8 +80,8 @@ export const getSaleProductsHandler = async (req: Request, res: Response) => {
     const shop: typeof model.Shop = await getShopByUuidOrCode(req.params.shopUuid)
     if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'La boutique indiquée est inexistante.'});
 
-    const products: typeof model.Product = await getProducts(req, shop.shopId);
-    const categories: typeof model.Category = await getCategories(req);
+    const products: typeof model.Product = await getSaleProducts(req, shop.shop_id);
+    const categories: typeof model.Category = await getCategories(req, 0);
     return res.status(200).json({status: 200, data: {categories, products}, notification: 'Liste des produits et des catégories'});
   } catch (error: any) {
     console.error('product.controller::getSaleProductsHandler', error);
