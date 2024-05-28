@@ -54,3 +54,16 @@ export const sessionByUuid = async (uuid: string) => {
     throw new Error(error);
   }
 }
+
+export const userSession = async (userId: string) => {
+  try {
+    return await model.Session.findOne({
+      where: { 
+        fk_user_id: userId ,
+        is_started: 1
+      }
+    });
+  } catch (error: any) {
+    throw new Error(error);
+  }
+}

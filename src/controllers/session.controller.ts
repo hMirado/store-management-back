@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { startSession, endSession, sessionByUuid } from "../services/session.service";
+import { startSession, endSession, sessionByUuid, userSession } from "../services/session.service";
 import { getShopByUuidOrCode } from "../services/shop.service";
 
 const model = require("../models/index");
@@ -31,6 +31,18 @@ export const endSessionHandler = async (req: Request, res: Response) => {
     }
     const session = await endSession(value.cash, sessionUuid);
     return res.status(200).json({status: 200, data: session, notification: 'Votre session est fermée.'});
+  } catch (error: any) {
+    console.log(error)
+    return res.status(500).json({ error: error.toString(), notification: "Erreur système!" });
+  }
+}
+
+export const userSessionHandler = async (req: Request, res: Response) => {
+  const user = res.locals.user;
+  try {
+    const session = await userSession(user.user_id);
+    const notification = session ? 'Vous avez une session ouverte.' : 'Vous n\'avez pas de session en cours.';
+    return res.status(200).json({status: 200, data: session, notification });
   } catch (error: any) {
     console.log(error)
     return res.status(500).json({ error: error.toString(), notification: "Erreur système!" });
