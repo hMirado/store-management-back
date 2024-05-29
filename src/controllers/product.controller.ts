@@ -18,7 +18,6 @@ import {
 } from "../services/product.service";
 import { getShopByUuidOrCode } from "../services/shop.service";
 import { encodeFile } from "../helpers/helper";
-import { url } from "inspector";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {

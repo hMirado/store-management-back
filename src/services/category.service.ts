@@ -34,7 +34,10 @@ export const getCategories = async(req: Request, paginate: number = 1) => {
     } else {
       return await model.Category.findAll({
         include: model.Product,
-        where: condition
+        where: condition,
+        order: [
+          ['label', 'ASC']
+        ],
       });
     }
   } catch (error: any) {
