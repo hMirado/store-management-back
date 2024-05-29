@@ -203,9 +203,7 @@ export const getProductByLabel = async (label: string) => {
 }
 
 export const getSaleProducts = async (req: Request, shop: number) => {
-  let conditions: any = {
-
-  };
+  let conditions: any = {};
   if (req.query.category && req.query.category != '') conditions['fk_category_id'] = +req.query.category
   if (req.query.search && req.query.search != '') {
     conditions[Op.or] = [

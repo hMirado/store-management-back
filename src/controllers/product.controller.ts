@@ -80,6 +80,7 @@ export const getSaleProductsHandler = async (req: Request, res: Response) => {
     if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'La boutique indiquée est inexistante.'});
 
     const products: typeof model.Product = await getSaleProducts(req, shop.shop_id);
+    delete req.query.paginate
     const categories: typeof model.Category = await getCategories(req, 0);
     return res.status(200).json({status: 200, data: {categories, products}, notification: 'Liste des produits et des catégories'});
   } catch (error: any) {
