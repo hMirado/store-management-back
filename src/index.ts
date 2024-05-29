@@ -21,6 +21,7 @@ const priceRoute = require("./routes/price.route");
 const saleRoute = require("./routes/sale.route");
 const fileRoute = require("./routes/file.route");
 const sessionRoute = require("./routes/session.route");
+const cartRoute = require("./routes/cart.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -54,6 +55,7 @@ app.use("/price", priceRoute);
 app.use("/sale", saleRoute);
 app.use("/file", fileRoute);
 app.use("/session", sessionRoute);
+app.use("/cart", cartRoute);
 
 const port = process.env.PORT;
 app.listen(port, () => {

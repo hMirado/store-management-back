@@ -26,6 +26,7 @@ import { Cart } from './cart.model';
 import { CartProduct } from './cart-product.model';
 import { Sale } from './sale.model';
 import { Session } from './session-model';
+import { CartStatus } from './cart-status.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -577,7 +578,7 @@ CashRegister.belongsTo(Shop, {
 User.hasMany(Cart, {
   foreignKey: {
     name: "fk_seller",
-    allowNull: false
+    allowNull: true
   },
   sourceKey: "user_id"
 });
@@ -585,7 +586,7 @@ Cart.belongsTo(User, {
   as: "seller",
   foreignKey: {
     name: "fk_seller",
-    allowNull: false
+    allowNull: true
   },
   targetKey: "user_id"
 });
@@ -594,7 +595,7 @@ Cart.belongsTo(User, {
 User.hasMany(Cart, {
   foreignKey: {
     name: "fk_customer",
-    allowNull: true
+    allowNull: false
   },
   sourceKey: "user_id"
 });
@@ -602,7 +603,7 @@ Cart.belongsTo(User, {
   as: "customer",
   foreignKey: {
     name: "fk_customer",
-    allowNull: true
+    allowNull: false
   },
   targetKey: "user_id"
 });
@@ -611,14 +612,14 @@ Cart.belongsTo(User, {
 Shop.hasMany(Cart, {
   foreignKey: {
     name: "fk_shop_id",
-    allowNull: false
+    allowNull: true
   },
   sourceKey: "shop_id"
 });
 Cart.belongsTo(Shop, {
   foreignKey: {
     name: "fk_shop_id",
-    allowNull: false
+    allowNull: true
   },
   targetKey: "shop_id"
 });
@@ -627,14 +628,14 @@ Cart.belongsTo(Shop, {
 Payment.hasMany(Cart, {
   foreignKey: {
     name: "fk_payment_id",
-    allowNull: false
+    allowNull: true
   },
   sourceKey: "payment_id"
 });
 Cart.belongsTo(Payment, {
   foreignKey: {
     name: "fk_payment_id",
-    allowNull: false
+    allowNull: true
   },
   targetKey: "payment_id"
 });
@@ -646,7 +647,7 @@ Product.belongsToMany(
     through: CartProduct,
     foreignKey: {
       name: "product_id",
-      allowNull: false
+      allowNull: true
     }
   }
 );
@@ -656,10 +657,23 @@ Cart.belongsToMany(
     through: CartProduct,
     foreignKey: {
       name: "cart_id",
-      allowNull: false
+      allowNull: true
     }
   }
 );
+
+CartStatus.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_cart_status"
+  },
+  sourceKey: "cart_status_id"
+});
+Cart.belongsTo(CartStatus, {
+  foreignKey: {
+    name: "fk_cart_status"
+  },
+  targetKey: "cart_status_id"
+});
 
 
 /**
@@ -768,6 +782,7 @@ module.exports = {
   Payment,
   Cart,
   CartProduct,
+  CartStatus,
   Sale,
   Session
 };

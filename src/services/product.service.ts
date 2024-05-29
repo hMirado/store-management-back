@@ -7,8 +7,6 @@ import { createMuliplePrice } from "./price.service";
 const sequelize = require("../config/db.config");
 import { convertToExcel, generateExcel, encodeFile } from "../helpers/helper"
 import { getCategoryByCode } from "./category.service";
-import path, { dirname } from "path";
-import { where } from "sequelize";
 const fs = require('fs');
 
 export const getProductsOld = async (req: Request, categoryId: string = '') => {
