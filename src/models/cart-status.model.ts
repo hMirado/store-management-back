@@ -1,32 +1,33 @@
-import Sequelize  from "sequelize";
+import Sequelize from "sequelize";
 const sequelize = require("../config/db.config");
 
-export const Cart = sequelize.define(
-  "cart",
+export const CartStatus = sequelize.define(
+  "cart_status",
   {
-    cart_id: {
+    cart_status_id: {
       type: Sequelize.INTEGER,
 			autoIncrement: true,
 			primaryKey: true,
 			allowNull: false,
     },
-    cart_uuid: {
+    cart_status_uuid: {
 			type: Sequelize.UUID,
 			defaultValue: Sequelize.UUIDV4,
 			allowNull: false,
 			unique: "compositeIndex",
 		},
-		cart_number: {
-			type: Sequelize.BIGINT,
+    cart_status_code: {
+      type: Sequelize.UUID,
 			allowNull: false,
 			unique: "compositeIndex",
-		},
-		total_ttc: {
-			type: Sequelize.INTEGER,
-			defaultValue: 0,
-		}
+    },
+    cart_status_label: {
+      type: Sequelize.UUID,
+			allowNull: false,
+			unique: "compositeIndex",
+    }
   },
 	{
 		paranoid: true,
 	}
-);
+)

@@ -14,6 +14,7 @@ const transferTypeSeed = require('./transfer-type.seed');
 const userShopSeed = require('./user-shop.seed');
 const paymentSeed = require('./payment.seed');
 const view = require('./query-view.seed');
+const cartStatus = require('./cart-status.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -32,6 +33,7 @@ module.exports = () => {
     userSeed.john(),
     paymentSeed(),
     ShopSeed(),
+    cartStatus()
   ]).then(() => {
     [
       //ProductSeed(),

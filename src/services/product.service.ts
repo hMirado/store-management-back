@@ -7,8 +7,6 @@ import { createMuliplePrice } from "./price.service";
 const sequelize = require("../config/db.config");
 import { convertToExcel, generateExcel, encodeFile } from "../helpers/helper"
 import { getCategoryByCode } from "./category.service";
-import path, { dirname } from "path";
-import { where } from "sequelize";
 const fs = require('fs');
 
 export const getProductsOld = async (req: Request, categoryId: string = '') => {
@@ -203,9 +201,7 @@ export const getProductByLabel = async (label: string) => {
 }
 
 export const getSaleProducts = async (req: Request, shop: number) => {
-  let conditions: any = {
-
-  };
+  let conditions: any = {};
   if (req.query.category && req.query.category != '') conditions['fk_category_id'] = +req.query.category
   if (req.query.search && req.query.search != '') {
     conditions[Op.or] = [

@@ -7,7 +7,7 @@ import { generateExcel, encodeFile } from "../helpers/helper";
 var XLSX = require('xlsx');
 var fs = require('fs');
 
-export const getCategories = async(req: Request, paginate: number = 1) => {
+export const getCategories = async(req: Request, paginate: number = 0) => {
   let condition: any = {}
   if (req.query.keyword) { 
     const keyword = req.query.keyword
@@ -16,8 +16,9 @@ export const getCategories = async(req: Request, paginate: number = 1) => {
       sequelize.where(sequelize.col('code'), { [Op.like]: `%${keyword}%`}),
     ]
   }
+
   try {
-    if (paginate == 1) {
+    if ((req.query.paginate && +req.query.paginate == 1) || paginate == 1) {
       // @todo enlevé - 1 sur la page pour avoir la page précis
       const page = (req.query.page && +req.query.page > 1) ? +req.query.page - 1 : 0;
 
@@ -34,7 +35,10 @@ export const getCategories = async(req: Request, paginate: number = 1) => {
     } else {
       return await model.Category.findAll({
         include: model.Product,
-        where: condition
+        where: condition,
+        order: [
+          ['label', 'ASC']
+        ],
       });
     }
   } catch (error: any) {
