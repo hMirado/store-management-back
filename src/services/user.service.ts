@@ -289,14 +289,10 @@ export const findAllUser = async (req: Request, role: string = '', shop: string 
           { 
             model: model.Shop,
             where : shopCondition,
-            required: false
+            required: true
           },
           {
             model: model.Role,
-            include: {
-              model: model.Authorization,
-              required: false
-            },
             required: false
           }
         ],

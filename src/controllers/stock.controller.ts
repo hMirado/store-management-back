@@ -9,9 +9,10 @@ import {
   countProductInStock,
   countProductOutStock,
   addStock,
-  getStockByProductShop
+  getStockByProductShop,
+  importStock
 } from '../services/stock.service'
-import { getShopByUuid } from '../services/shop.service'
+import { getShopByUuidOrCode } from '../services/shop.service'
 import { getStockMovmentTypeByMovment } from '../services/stock-movment-type.service'
 import { getProductByUuid, getProductById } from "../services/product.service";
 import { createMultipleSerialization } from '../services/serialization.service';
@@ -20,6 +21,7 @@ import { createPrice } from '../services/price.service';
 import { ADMIN } from "../config/constants";
 const sequelize = require("../config/db.config");
 const model = require("../models/index");
+import { encodeFile } from "../helpers/helper";
 
 export const getProductsInStockHandler = async (req: Request, res: Response) => {
   let shopUuid: string|null = req.query.shop ? req.query.shop as string : null
@@ -29,7 +31,7 @@ export const getProductsInStockHandler = async (req: Request, res: Response) => 
       shopUuid = tokenData.shops[0].shop_uuid
     }
     if (shopUuid) {
-      const shop = await getShopByUuid(shopUuid);
+      const shop = await getShopByUuidOrCode(shopUuid);
       if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
     }
     
@@ -45,7 +47,7 @@ export const qetStockHandler = async (req: Request, res: Response) => {
   const shopUuid: string = req.query.shop as string;
   const productUuid: string = req.query.product as string;
   try {
-    const shop = await getShopByUuid(shopUuid);
+    const shop = await getShopByUuidOrCode(shopUuid);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
     const product = await getProductByUuid(productUuid);
@@ -67,7 +69,7 @@ export const createOrUpdateStockHandler = async (req: Request, res: Response) =>
   const productId = req.body.item
   const random: number = Date.now();
   try {
-    const shop: typeof model.Shop = await getShopByUuid(req.params.shop);
+    const shop: typeof model.Shop = await getShopByUuidOrCode(req.params.shop);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
     const product: typeof model.Product = await getProductById(productId);
@@ -165,7 +167,7 @@ export const countStock = async (req: Request, res: Response) => {
   try {
     
     if (shopUuid) {
-      const shop: typeof model.Shop = await getShopByUuid(shopUuid);
+      const shop: typeof model.Shop = await getShopByUuidOrCode(shopUuid);
       if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
       shopId = shop.shop_id;
     }
@@ -195,7 +197,7 @@ export const addStockStockHandler = async (req: Request, res: Response) => {
     const _product = await getProductByUuid(req.body.product);
     if (!_product) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Article inconnu.'});
 
-    const _shop = await getShopByUuid(req.body.shop);
+    const _shop = await getShopByUuidOrCode(req.body.shop);
     if (!_shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
     const _stock = await getStockById(_shop.shop_id, _product.product_id);
@@ -215,7 +217,7 @@ export const addStockStockHandler = async (req: Request, res: Response) => {
 
 export const getStockByProductShopHandler = async (req: Request, res: Response) => {
   try {
-    const shop: typeof model.Shop = await getShopByUuid(req.params.shop);
+    const shop: typeof model.Shop = await getShopByUuidOrCode(req.params.shop);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop inexistant.'});
 
     const product: typeof model.Product = await getProductByUuid(req.params.product);
@@ -224,7 +226,31 @@ export const getStockByProductShopHandler = async (req: Request, res: Response) 
     const stock: typeof model.Stock = await getStockByProductShop(product.product_id, shop.shop_id);
     return await res.status(200).json({status: 200, data: stock, notification: "Stock retourné."})
   } catch (error: any) {
-    console.error("\nstock.controller::getStockByProductShopHandler", error)
+    console.error("stock.controller::getStockByProductShopHandler", error)
     return await res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const importStokHandler = async (req: Request, res: Response) => {
+  try {
+    const file = req.body.file;
+		if (!file.includes("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,")) 
+			return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Format invalide. Le fichier n\'est pas de format XLS/XLSX.'});
+    const response = await importStock(file);
+    return await res.status(200).json({status: 200, data: response, notification: "Stock retourné."})
+  } catch (error: any) {
+    console.error("stock.controller::importStokHandler", error);
+    return await res.status(500).json({ error: error, notification: "Erreur système" });
+  }
+}
+
+export const exportModelHandler = async (req: Request, res: Response) => {
+  try {
+    const fileName = 'files/models/stock.xlsx';
+    const encodedFile = encodeFile(fileName);
+    return res.status(200).json({status: 200, data: encodedFile, notification: 'Export du modèle effectué.'});
+  } catch (error) {
+    console.error('product.controller::exportModelHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }

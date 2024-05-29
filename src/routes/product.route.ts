@@ -1,6 +1,6 @@
 const productRouter = require('express').Router();
 import { 
-  createProductHandler, 
+  importProductHandler, 
   getProductByCodeHandler, 
   getSaleProductsHandler, 
   getProductsHandler, 
@@ -9,10 +9,13 @@ import {
   getProductByLabelOrCodeHandler,
   updateProductHandler,
   getProductByUuidHandler,
-  getProductByLabelHandler
+  getProductByLabelHandler,
+  exportModelHandler,
+  addImageHandler,
+  removeImageHandler,
+  getFile
 } from '../controllers/product.controller';
 import { verifyToken } from "../middlewares/auth";
-
 productRouter.get('/', verifyToken, getProductsHandler);
 productRouter.get('/code/:code', verifyToken, getProductByCodeHandler);
 productRouter.get('/label/:label', verifyToken, getProductByLabelHandler);
@@ -20,8 +23,11 @@ productRouter.get('/sale/:shopUuid', verifyToken, getSaleProductsHandler);
 productRouter.get('/detail/:uuid', verifyToken, getProductByUuidHandler);
 productRouter.get('/verify-label', verifyToken, getProductByLabelOrCodeHandler);
 productRouter.get('/count', verifyToken, countProductHandler);
-//productRouter.post('/', verifyToken, createProductHandler);
 productRouter.post('/', verifyToken, createProductWithPriceHandler);
 productRouter.put('/', verifyToken, updateProductHandler);
+productRouter.post('/import', verifyToken, importProductHandler);
+productRouter.get('/export', verifyToken, exportModelHandler);
+productRouter.post('/image', verifyToken, addImageHandler);
+productRouter.put('/image/remove', verifyToken, removeImageHandler);
 
 module.exports = productRouter;

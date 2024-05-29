@@ -18,6 +18,10 @@ const attributeTypeRoute = require("./routes/attribute-type.route");
 const transferRoute = require("./routes/transfer.route");
 const roleRoute = require("./routes/role.route");
 const priceRoute = require("./routes/price.route");
+const saleRoute = require("./routes/sale.route");
+const fileRoute = require("./routes/file.route");
+const sessionRoute = require("./routes/session.route");
+const cartRoute = require("./routes/cart.route");
 const Seed = require("./seeds/index");
 
 const app: Express = express();
@@ -31,13 +35,8 @@ sequelize.sync({ alter: false , force: false });
 // sequelize
 //   .sync({ force: true })
 //   .then(() => Seed())
-//   .then(() => {
-//     console.log("\nDrop and resync db.\n");
-//   })
-//   .catch((error: Error) => {
-//     console.log("\nERROR : \n");
-//     console.log(error);
-//   });
+//   .then(() => console.log("\nDrop and resync db.\n"))
+//   .catch((error: Error) => console.log("\nERROR : \n", error));
 
 app.use("/company", companyRoutes);
 app.use("/shop", shopRoutes);
@@ -53,6 +52,10 @@ app.use("/attribute-type", attributeTypeRoute);
 app.use("/transfer", transferRoute);
 app.use("/role", roleRoute);
 app.use("/price", priceRoute);
+app.use("/sale", saleRoute);
+app.use("/file", fileRoute);
+app.use("/session", sessionRoute);
+app.use("/cart", cartRoute);
 
 const port = process.env.PORT;
 app.listen(port, () => {

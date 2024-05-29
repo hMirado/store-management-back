@@ -9,7 +9,7 @@ import {
   getTransferByUuid,
   validateTransfer
 } from "../services/transfer.service";
-import { getShopByUuid } from '../services/shop.service';
+import { getShopByUuidOrCode } from '../services/shop.service';
 import { findUserByUuid } from "../services/user.service";
 import { getStockMovmentTypeByMovment } from "../services/stock-movment-type.service";
 import { createStockMovment, createStock, editStock, getStockById } from "../services/stock.service";
@@ -22,8 +22,8 @@ export const createTransferHandler = async (req: Request, res: Response) => {
   const shopSenderUuid: string = req.body.shop_sender;
   const shopReceiverUuid: string = req.body.shop_receiver;
   try {
-    const shopSender: typeof model.Shop = await getShopByUuid(shopSenderUuid);
-    const shopReceiver: typeof model.Shop = await getShopByUuid(shopReceiverUuid);
+    const shopSender: typeof model.Shop = await getShopByUuidOrCode(shopSenderUuid);
+    const shopReceiver: typeof model.Shop = await getShopByUuidOrCode(shopReceiverUuid);
     if (!shopSender || !shopReceiver) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Un des shops est inexistant.'});
     
     const user: typeof model.User = await findUserByUuid(userUuid);
@@ -126,7 +126,7 @@ export const getTransferByUuidByShopHandler = async (req: Request, res: Response
   const transferUuid: string = req.params.transfer;
   const inProgress: string = req.query.in_progress as string;
   try {
-    const shop: typeof model.Shop = await getShopByUuid(shopUuid);
+    const shop: typeof model.Shop = await getShopByUuidOrCode(shopUuid);
     if (!shop) return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Shop est inexistant.'});
 
     const transfer: typeof model.Transfer = await getTransferByUuidByShop(transferUuid, shop.shop_id, Boolean(+inProgress));

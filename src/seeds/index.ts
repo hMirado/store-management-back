@@ -12,6 +12,9 @@ const attributeTypeSeed = require('./attribute-type.seed');
 const transferStatusSeed = require('./transfer-status.seed');
 const transferTypeSeed = require('./transfer-type.seed');
 const userShopSeed = require('./user-shop.seed');
+const paymentSeed = require('./payment.seed');
+const view = require('./query-view.seed');
+const cartStatus = require('./cart-status.seed');
 
 module.exports = () => {
   return Promise.all([
@@ -28,14 +31,19 @@ module.exports = () => {
     userSeed.jenny(),
     userSeed.jane(),
     userSeed.john(),
+    paymentSeed(),
+    ShopSeed(),
+    cartStatus()
   ]).then(() => {
     [
-      ShopSeed(),
       //ProductSeed(),
       authorizationRoleAdminSeed()
     ];
   }).then(() => {
-    userShopSeed()
+    [
+      userShopSeed(),
+      view()
+    ]
   }).then(() => {
     console.log('\nSeed completed.\n')
   })

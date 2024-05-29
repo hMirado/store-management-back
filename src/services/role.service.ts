@@ -39,6 +39,21 @@ export const getRoles = async (req: Request) => {
   }
 }
 
+export const verifyRoleExist =async (uuid: string) => {
+  try {
+    const role: typeof Role = await Role.findOne({
+      include: Authorization,
+      where: { role_uuid: uuid }
+    });
+    return role;
+  } catch (error: any) {
+    console.log("role::service>>getRoleByUuid");
+    console.log(error);
+    
+    throw new Error(error);
+  }
+}
+
 export const getRoleByUuid = async (uuid: string) => {
   try {
     const role: typeof Role = await Role.findOne({

@@ -1,4 +1,4 @@
-import Sequelize, { BOOLEAN } from "sequelize";
+import Sequelize  from "sequelize";
 const sequelize = require("../config/db.config");
 
 export const Price = sequelize.define(

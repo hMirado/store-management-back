@@ -33,5 +33,8 @@ export const Serialization = sequelize.define(
 			type: Sequelize.STRING,
 			allowNull: true
 		}
+	},
+	{
+		paranoid: true,
 	}
 );

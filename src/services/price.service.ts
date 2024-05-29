@@ -1,7 +1,7 @@
 const model = require("../models/index");
 import { Request } from "express";
 
-export const createPrice = async (price: typeof model.Price, transaction: IDBTransaction | any = null) => {
+export const createPrice = async (price: typeof model.Price, transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Price.create(
       price,
@@ -14,10 +14,11 @@ export const createPrice = async (price: typeof model.Price, transaction: IDBTra
   }
 }
 
-export const createMuliplePrice = async (prices: typeof model.Price[], transaction: IDBTransaction | any = null) => {
+export const createMuliplePrice = async (prices: typeof model.Price[], transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Price.bulkCreate(
       prices,
+      {updateOnDuplicate: ["fk_product_id", "fk_shop_id"]},
       transaction
     )
   } catch (error: any) {

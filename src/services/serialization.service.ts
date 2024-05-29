@@ -2,7 +2,7 @@ const model = require("../models/index");
 import { Op, QueryTypes } from "sequelize"
 const sequelize = require("../config/db.config");
 
-export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: IDBTransaction | any = null) => {
+export const createMultipleSerialization = async (value: typeof model.Serialization[], _transaction: typeof sequelize.IDBTransaction | any = null) => {
   try {
     return await model.Serialization.bulkCreate(value, { transaction: _transaction });
   } catch (error: any) {
@@ -36,7 +36,7 @@ export const getSerializationByValue = async (value: string, type: number) => {
 }
 
 export const getSerializationByProductShop = async (productId: number, shopId: number, search: string = '', isSold: boolean = false) => {
-  const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, s.shop_id, st.serialization_type_id, st.code, st.label";
+  const column = "sr.serialization_id, sr.serialization_uuid, sr.serialization_value, sr.group_id, p.product_id, p.product_uuid, s.shop_id, s.shop_uuid, st.serialization_type_id, st.code, st.label";
   let query = `
     SELECT ${column} FROM serializations sr
     INNER JOIN serialization_types st ON sr.fk_serialization_type_id = st.serialization_type_id
@@ -135,7 +135,7 @@ export const getSerializationByProduct_Type_Value = async (productId: number, ty
   }
 }
 
-export const updateSerializationInTransfer = async (groupId: string[], transferId: number, _transaction: IDBTransaction | null = null) => {
+export const updateSerializationInTransfer = async (groupId: string[], transferId: number, _transaction: typeof sequelize.IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
       {
@@ -154,7 +154,7 @@ export const updateSerializationInTransfer = async (groupId: string[], transferI
   }
 }
 
-export const updateSerializationShop = async (groupId: string[], shop: number, _transaction: IDBTransaction | null = null) => {
+export const updateSerializationShop = async (groupId: string[], shop: number, _transaction: typeof sequelize.IDBTransaction | null = null) => {
   try {
     return await model.Serialization.update(
       {
@@ -168,6 +168,26 @@ export const updateSerializationShop = async (groupId: string[], shop: number, _
        transaction: _transaction 
       }
     )
+  } catch (error: any) {
+    console.log('\nserialization.service::updateSerializationByAttribute', error);
+    throw new Error(error);
+  }
+}
+
+
+export const updateSerializationIsSold = async (value: boolean = true, groupId: string[], _transaction: typeof sequelize.IDBTransaction | null = null) => {
+  try {
+    return await model.Serialization.update(
+      {
+        is_sold: value
+      },
+      {
+        where: {
+          group_id: { [Op.in]: groupId }
+        },
+       transaction: _transaction 
+      }
+    );
   } catch (error: any) {
     console.log('\nserialization.service::updateSerializationByAttribute', error);
     throw new Error(error);

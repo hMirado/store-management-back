@@ -1,7 +1,4 @@
-const fs = require("fs");
-const XLSX = require('xlsx');
 const model = require("../models/index");
-import { toLowerKeys } from "../helpers/format";
 import { Request, Response } from "express";
 import { getCategories, getCategoryById, getCategoryByUuid } from "../services/category.service";
 import { 
@@ -13,9 +10,14 @@ import {
   getProductByLabelOrCode,
   updateProduct,
   getProductByUuid,
-  getProductByLabel
+  getProductByLabel,
+  importProduct,
+  addImage,
+  removeImage,
+  getSaleProducts
 } from "../services/product.service";
-import { getShopByUuid } from "../services/shop.service";
+import { getShopByUuidOrCode } from "../services/shop.service";
+import { encodeFile } from "../helpers/helper";
 
 export const getProductsHandler = async (req: Request, res: Response) => {
   try {
@@ -74,11 +76,12 @@ export const getProductByDetailHandler = async (req: Request, res: Response) => 
 
 export const getSaleProductsHandler = async (req: Request, res: Response) => {
   try {
-    const shop: typeof model.Shop = await getShopByUuid(req.params.shopUuid)
+    const shop: typeof model.Shop = await getShopByUuidOrCode(req.params.shopUuid)
     if (!shop) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'La boutique indiquée est inexistante.'});
 
-    const products: typeof model.Product = await getProducts(req, shop.shopId);
-    const categories: typeof model.Category = await getCategories(req);
+    const products: typeof model.Product = await getSaleProducts(req, shop.shop_id);
+    delete req.query.paginate
+    const categories: typeof model.Category = await getCategories(req, 0);
     return res.status(200).json({status: 200, data: {categories, products}, notification: 'Liste des produits et des catégories'});
   } catch (error: any) {
     console.error('product.controller::getSaleProductsHandler', error);
@@ -98,7 +101,7 @@ export const getProductByLabelOrCodeHandler = async (req: Request, res: Response
 
 export const getProductByUuidHandler = async (req: Request, res: Response) => {
   try {
-    const product = await getProductByUuid(req.params.uuid as string);
+    const product = await getProductByUuid(req.params.uuid as string, true, req.rawHeaders[1]);
     return res.status(200).json({status: 200, data: product, notification: 'Details de l\'article'});
   } catch (error: any) {
     console.error('product.controller::getProductByLabelOrCodeHandler', error);
@@ -161,6 +164,70 @@ export const updateProductHandler = async (req: Request, res: Response) => {
     return res.status(201).json({status: 201, data: update, notification: 'L`\article a été modifié avec succès.'});
   } catch (error: any) {
     console.error('product.controller::getProductByLabelOrCodeHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const importProductHandler = async (req: Request, res: Response) => {
+  try {
+    const file = req.body.file;
+    if (!file.includes("data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"))
+      return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: 'Format invalide. Le fichier n\'est pas de format XLS/XLSX.'});
+    const response = await importProduct(file);
+    return res.status(201).json({status: 201, data: response, notification: 'Importation effectué.'});
+  } catch (error) {
+    console.error('product.controller::importProductHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const exportModelHandler = async (req: Request, res: Response) => {
+  try {
+    const fileName = 'files/models/product.xlsx';
+    const encodedFile = encodeFile(fileName);
+    return res.status(200).json({status: 200, data: encodedFile, notification: 'Export du modèle effectué.'});
+  } catch (error) {
+    console.error('product.controller::exportModelHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const addImageHandler = async (req: Request, res: Response) => {
+  try {
+    const img = req.body.file;
+    const productUuid = req.body.product;
+
+    const product = await getProductByUuid(productUuid);
+    if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
+
+    if (!img.includes("data:image/jpeg;base64,") && !img.includes("data:image/jpg;base64,") && !img.includes("data:image/png;base64,"))
+      return res.status(400).json({ status: 400, error: 'La syntaxe de la requête est erronée.', notification: "Le format de l'image n'est pas pris en charge."});
+
+    const response = await addImage(img, product);
+    return res.status(201).json({status: 201, data: response, notification: 'Image ajouté.'});
+  } catch (error) {
+    console.error('product.controller::addImageHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+export const removeImageHandler = async (req: Request, res: Response) => {
+  try {
+    const productUuid = req.body.product;
+    const product = await getProductByUuid(productUuid);
+    if (!product) return res.status(400).json({ status: 400, error: 'Ressource non trouvée', notification: 'Article inéxistant.'});
+    const response = await removeImage(product);
+    return res.status(201).json({status: 201, data: response, notification: 'Image supprimer.'});
+  } catch (error) {
+    console.error('product.controller::removeImageHandler', error);
+    return res.status(500).json({ error: error, notification: 'Erreur système'});
+  }
+}
+
+export const getFile = async (req: Request, res: Response) => {
+  try {
+    return res.download('./uploads/images/products/0bbd82ac-dbbe-4565-9b45-06e124a8a613.jpeg')
+  } catch (error) {
+    console.error('product.controller::removeImageHandler', error);
     return res.status(500).json({ error: error, notification: 'Erreur système'});
   }
 }

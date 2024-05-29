@@ -16,9 +16,10 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
+    "csvtojson": "^2.0.10",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^2.3.3",
     "sequelize": "^6.29.0",
     "ts-node": "^10.9.1",
@@ -29,7 +30,7 @@
     "@types/node": "^18.11.3",
     "concurrently": "^7.4.0",
     "eslint": "^8.25.0",
-    "nodemon": "^2.0.20",
+    "nodemon": "^3.0.1",
     "typescript": "^4.8.4"
   }
 }

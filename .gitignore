@@ -1,2 +1,5 @@
 node_modules
 .idea
+src/uploads/images/products
+src/uploads/images/users
+dist

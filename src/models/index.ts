@@ -21,6 +21,12 @@ import { UserShop } from './user-shop.model';
 import { TransferProduct } from './transfer-product.model';
 import { TransferSerialization } from './transfer-serialization.model';
 import { CashRegister } from './cash-register.model';
+import { Payment } from './payment.model';
+import { Cart } from './cart.model';
+import { CartProduct } from './cart-product.model';
+import { Sale } from './sale.model';
+import { Session } from './session-model';
+import { CartStatus } from './cart-status.model';
 
 /**
  * @summary: COMPANY & SHOP
@@ -80,7 +86,6 @@ Product.belongsTo(Category, {
   },
   targetKey: "category_id",
 });
-
 
 /**
  * @summary: PRODUCT & ATTRIBUTE
@@ -565,6 +570,192 @@ CashRegister.belongsTo(Shop, {
   targetKey: "shop_id"
 });
 
+
+/**
+ * @summary: cart & seller & customer & payment & product
+ */
+// Seller
+User.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_seller",
+    allowNull: true
+  },
+  sourceKey: "user_id"
+});
+Cart.belongsTo(User, {
+  as: "seller",
+  foreignKey: {
+    name: "fk_seller",
+    allowNull: true
+  },
+  targetKey: "user_id"
+});
+
+// Customer
+User.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_customer",
+    allowNull: false
+  },
+  sourceKey: "user_id"
+});
+Cart.belongsTo(User, {
+  as: "customer",
+  foreignKey: {
+    name: "fk_customer",
+    allowNull: false
+  },
+  targetKey: "user_id"
+});
+
+// Shop
+Shop.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: true
+  },
+  sourceKey: "shop_id"
+});
+Cart.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: true
+  },
+  targetKey: "shop_id"
+});
+
+// Payment
+Payment.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_payment_id",
+    allowNull: true
+  },
+  sourceKey: "payment_id"
+});
+Cart.belongsTo(Payment, {
+  foreignKey: {
+    name: "fk_payment_id",
+    allowNull: true
+  },
+  targetKey: "payment_id"
+});
+
+// Product
+Product.belongsToMany(
+  Cart,
+  {
+    through: CartProduct,
+    foreignKey: {
+      name: "product_id",
+      allowNull: true
+    }
+  }
+);
+Cart.belongsToMany(
+  Product,
+  {
+    through: CartProduct,
+    foreignKey: {
+      name: "cart_id",
+      allowNull: true
+    }
+  }
+);
+
+CartStatus.hasMany(Cart, {
+  foreignKey: {
+    name: "fk_cart_status"
+  },
+  sourceKey: "cart_status_id"
+});
+Cart.belongsTo(CartStatus, {
+  foreignKey: {
+    name: "fk_cart_status"
+  },
+  targetKey: "cart_status_id"
+});
+
+
+/**
+ * @summary: Sale & seller & shop & product
+ */
+Product.hasMany(Sale, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  sourceKey: "product_id"
+});
+Sale.belongsTo(Product, {
+  foreignKey: {
+    name: "fk_product_id",
+    allowNull: false
+  },
+  targetKey: "product_id"
+});
+Shop.hasMany(Sale, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  sourceKey: "shop_id"
+});
+Sale.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id"
+});
+User.hasMany(Sale, {
+  foreignKey: {
+    name: "fk_user_id",
+    allowNull: false
+  },
+  sourceKey: "user_id"
+});
+Sale.belongsTo(User, {
+  foreignKey: {
+    name: "fk_user_id",
+    allowNull: false
+  },
+  targetKey: "user_id"
+});
+
+/**
+ * @summary: Session, User, Shop
+ */
+
+User.hasMany(Session, {
+  foreignKey: {
+    name: 'fk_user_id',
+    allowNull: false
+  },
+  source_key: 'user_id'
+});
+Session.belongsTo(User, {
+  foreignKey: {
+    name: "fk_user_id",
+    allowNull: false
+  },
+  targetKey: "user_id",
+})
+
+Shop.hasMany(Session, {
+  foreignKey: {
+    name: 'fk_shop_id',
+    allowNull: false
+  },
+  source_key: 'shop_id'
+});
+Session.belongsTo(Shop, {
+  foreignKey: {
+    name: "fk_shop_id",
+    allowNull: false
+  },
+  targetKey: "shop_id",
+})
+
 module.exports = { 
   Company, 
   Shop, 
@@ -587,5 +778,11 @@ module.exports = {
   TransferType,
   TransferProduct,
   TransferSerialization,
-  CashRegister
+  CashRegister,
+  Payment,
+  Cart,
+  CartProduct,
+  CartStatus,
+  Sale,
+  Session
 };
