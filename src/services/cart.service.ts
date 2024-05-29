@@ -9,7 +9,7 @@ export const generateNewCart = async (status: number, user: number, shop: number
         order: [['cart_id', 'DESC']]
       }
     ).then(async (value: any) => {
-      const cartNumber = generateCartNumber()+('0000' + (value ? value.cart_id.toString() : '1')).slice(-4);
+      const cartNumber = generateCartNumber()+('0000' + (value ? (value.cart_id + 1).toString() : '1')).slice(-4);
       return await createCart(status, user, shop, +cartNumber);
     }).then(async (value: any) => {
       return await getCart(value.cart_number);
