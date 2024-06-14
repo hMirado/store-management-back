@@ -6,6 +6,18 @@ const Product = require("./product.model");
 export const CartProduct = sequelize.define(
   "cart_product",
   {
+    cart_product_id: {
+      type: Sequelize.INTEGER,
+			autoIncrement: true,
+			primaryKey: true,
+			allowNull: false,
+    },
+    cart_product_uuid: {
+			type: Sequelize.UUID,
+			defaultValue: Sequelize.UUIDV4,
+			allowNull: false,
+			unique: "compositeIndex",
+		},
     cart_id: {
       type: Sequelize.INTEGER,
 			references: {
@@ -19,6 +31,13 @@ export const CartProduct = sequelize.define(
 				model: Product,
 				key: "product_id",
 			},
+    },
+    quantity: {
+      type: Sequelize.INTEGER,
+      defaultValue: 1
     }
+  },
+  {
+    paranoid: true,
   }
 );

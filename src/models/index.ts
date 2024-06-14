@@ -641,13 +641,14 @@ Cart.belongsTo(Payment, {
 });
 
 // Product
+
 Product.belongsToMany(
   Cart,
   {
     through: CartProduct,
     foreignKey: {
       name: "product_id",
-      allowNull: true
+      allowNull: false
     }
   }
 );

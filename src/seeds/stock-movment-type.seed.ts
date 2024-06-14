@@ -23,6 +23,11 @@ module.exports = () => {
             movment: 'OUT-SELL',
             label: 'Vente',
             description: 'Sortie de stock suite à une vente'
+        },
+        {
+            movment: 'CANCEL-SELL',
+            label: 'Vente',
+            description: 'Retour en stock suite a un annullation de panier ou d\'un article retiré d\'un panier'
         }
     ]).then( () => console.log('Seed StockMovmentType complete'))
 }

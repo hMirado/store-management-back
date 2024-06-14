@@ -18,7 +18,7 @@ module.exports = {
         DECLARE typeId varchar(255);
         
         SELECT movment INTO typeId FROM stock_movment_types smt WHERE smt.stock_movment_type_id = NEW.fk_stock_movment_type_id;
-        IF typeId = 'IN-IMPORT' THEN
+        IF typeId = 'IN-IMPORT' OR typeId = 'CANCEL-SELL' THEN
           SELECT COUNT(*) INTO id FROM stocks s WHERE s.fk_shop_id = NEW.fk_shop_id AND s.fk_product_id = NEW.fk_product_id;
           IF  id = 0 OR id = NULL  THEN
               INSERT INTO stocks (stock_uuid, quantity, createdAt, updatedAt, fk_shop_id, fk_product_id)
